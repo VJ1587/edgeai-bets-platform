@@ -133,20 +133,20 @@ const Challenges = () => {
                 <Card key={bet.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <Badge variant="outline">{bet.status}</Badge>
+                      <Badge variant="outline">{bet.status || 'pending'}</Badge>
                       <span className="text-xs text-muted-foreground">
-                        Expires {new Date(bet.expiry_time).toLocaleDateString()}
+                        Expires {bet.expiry_time ? new Date(bet.expiry_time).toLocaleDateString() : 'N/A'}
                       </span>
                     </div>
                     <div className="mb-3">
-                      <p className="font-medium">{bet.bet_type}</p>
+                      <p className="font-medium">Event: {bet.event_id || 'Custom Bet'}</p>
                       <p className="text-sm text-muted-foreground">
-                        {bet.bet_selection}
+                        Target: {bet.outcome || 'TBD'}
                       </p>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-green-400">
-                        ${bet.amount} stake
+                        ${bet.amount || 0} stake
                       </span>
                       <div className="flex gap-2">
                         {bet.status === 'pending' && bet.creator_id !== user?.id && (
@@ -190,13 +190,13 @@ const Challenges = () => {
                   key={groupBet.id} 
                   groupBet={{
                     id: groupBet.id,
-                    title: groupBet.title,
-                    description: groupBet.description || '',
-                    currentAmount: groupBet.total_pot,
-                    targetAmount: groupBet.max_pot || groupBet.total_pot * 2,
-                    participants: Math.floor(Math.random() * 10) + 1, // TODO: Get real participant count
-                    maxParticipants: groupBet.max_participants,
-                    closesIn: new Date(groupBet.expiry_time).toLocaleDateString()
+                    title: `Event: ${groupBet.event_id || 'Custom'}`,
+                    description: `Target: ${groupBet.target_outcome || 'TBD'}`,
+                    currentAmount: groupBet.total_pot || 0,
+                    targetAmount: (groupBet.total_pot || 0) * 2,
+                    participants: Math.floor(Math.random() * 10) + 1,
+                    maxParticipants: 20,
+                    closesIn: groupBet.created_at ? new Date(groupBet.created_at).toLocaleDateString() : 'N/A'
                   }} 
                 />
               ))

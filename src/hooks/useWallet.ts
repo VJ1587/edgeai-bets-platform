@@ -2,16 +2,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Database } from '@/integrations/supabase/types';
 
-interface UserWallet {
-  id: string;
-  user_id: string;
-  balance: number;
-  escrow_held: number;
-  margin_status: boolean;
-  created_at: string;
-  updated_at: string;
-}
+type UserWallet = Database['public']['Tables']['user_wallets']['Row'];
 
 export const useWallet = () => {
   const { user } = useAuth();
@@ -52,8 +45,7 @@ export const useWallet = () => {
         balance: 100.00,
         escrow_held: 0.00,
         margin_status: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       });
     } finally {
       setLoading(false);

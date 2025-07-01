@@ -2,44 +2,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Database } from '@/integrations/supabase/types';
 
-interface Bet {
-  id: string;
-  event_id?: string;
-  creator_id: string;
-  opponent_id?: string;
-  amount: number;
-  bet_type: string;
-  bet_selection: string;
-  odds: number;
-  status: 'pending' | 'matched' | 'completed' | 'cancelled' | 'expired';
-  vig_percent: number;
-  expiry_time: string;
-  outcome?: string;
-  payout_amount?: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface GroupBet {
-  id: string;
-  event_id?: string;
-  creator_id: string;
-  title: string;
-  description?: string;
-  bet_type: string;
-  target_outcome: string;
-  total_pot: number;
-  max_pot?: number;
-  max_participants: number;
-  vig_percent: number;
-  status: string;
-  result?: string;
-  expiry_time: string;
-  payout_distributed: boolean;
-  created_at: string;
-  updated_at: string;
-}
+type Bet = Database['public']['Tables']['bets']['Row'];
+type GroupBet = Database['public']['Tables']['group_bets']['Row'];
 
 export const useBets = () => {
   const { user } = useAuth();
