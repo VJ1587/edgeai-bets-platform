@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Picks from "./pages/Picks";
 import Lines from "./pages/Lines";
@@ -28,6 +29,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/landing" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/success" element={<Success />} />
             <Route path="/" element={

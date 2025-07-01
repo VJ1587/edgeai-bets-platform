@@ -18,7 +18,7 @@ const Index = () => {
   }
 
   // Redirect based on authentication status
-  return <Navigate to={user ? "/" : "/auth"} replace />;
+  return <Navigate to={user ? "/" : "/landing"} replace />;
 };
 
 export default Index;
