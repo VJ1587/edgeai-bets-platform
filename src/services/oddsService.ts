@@ -45,11 +45,11 @@ export const fetchLiveOdds = async (sport = 'upcoming'): Promise<OddsData[]> => 
 const getMockOdds = (): OddsData[] => [
   {
     id: '1',
-    sport_key: 'basketball_nba',
-    sport_title: 'NBA',
+    sport_key: 'basketball_wnba',
+    sport_title: 'WNBA',
     commence_time: new Date(Date.now() + 3600000).toISOString(),
-    home_team: 'Los Angeles Lakers',
-    away_team: 'Golden State Warriors',
+    home_team: 'Las Vegas Aces',
+    away_team: 'New York Liberty',
     bookmakers: [{
       key: 'draftkings',
       title: 'DraftKings',
@@ -57,22 +57,22 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'Los Angeles Lakers', price: -110 },
-            { name: 'Golden State Warriors', price: +105 }
+            { name: 'Las Vegas Aces', price: -140 },
+            { name: 'New York Liberty', price: +120 }
           ]
         },
         {
           key: 'spreads',
           outcomes: [
-            { name: 'Los Angeles Lakers', price: -110, point: -2.5 },
-            { name: 'Golden State Warriors', price: -110, point: 2.5 }
+            { name: 'Las Vegas Aces', price: -110, point: -3.5 },
+            { name: 'New York Liberty', price: -110, point: 3.5 }
           ]
         },
         {
           key: 'totals',
           outcomes: [
-            { name: 'Over', price: -110, point: 225.5 },
-            { name: 'Under', price: -110, point: 225.5 }
+            { name: 'Over', price: -110, point: 165.5 },
+            { name: 'Under', price: -110, point: 165.5 }
           ]
         }
       ]
@@ -80,11 +80,11 @@ const getMockOdds = (): OddsData[] => [
   },
   {
     id: '2',
-    sport_key: 'soccer_epl',
-    sport_title: 'Premier League',
-    commence_time: new Date(Date.now() + 7200000).toISOString(),
-    home_team: 'Manchester United',
-    away_team: 'Liverpool',
+    sport_key: 'baseball_mlb',
+    sport_title: 'MLB',
+    commence_time: new Date(Date.now() + 5400000).toISOString(),
+    home_team: 'Los Angeles Dodgers',
+    away_team: 'San Francisco Giants',
     bookmakers: [{
       key: 'fanduel',
       title: 'FanDuel',
@@ -92,16 +92,22 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'Manchester United', price: +180 },
-            { name: 'Liverpool', price: -120 },
-            { name: 'Draw', price: +240 }
+            { name: 'Los Angeles Dodgers', price: -165 },
+            { name: 'San Francisco Giants', price: +140 }
+          ]
+        },
+        {
+          key: 'spreads',
+          outcomes: [
+            { name: 'Los Angeles Dodgers', price: -110, point: -1.5 },
+            { name: 'San Francisco Giants', price: -110, point: 1.5 }
           ]
         },
         {
           key: 'totals',
           outcomes: [
-            { name: 'Over', price: -105, point: 2.5 },
-            { name: 'Under', price: -115, point: 2.5 }
+            { name: 'Over', price: -105, point: 9.5 },
+            { name: 'Under', price: -115, point: 9.5 }
           ]
         }
       ]
@@ -109,11 +115,11 @@ const getMockOdds = (): OddsData[] => [
   },
   {
     id: '3',
-    sport_key: 'baseball_mlb',
-    sport_title: 'MLB',
-    commence_time: new Date(Date.now() + 5400000).toISOString(),
-    home_team: 'New York Yankees',
-    away_team: 'Boston Red Sox',
+    sport_key: 'mma_mixed_martial_arts',
+    sport_title: 'UFC',
+    commence_time: new Date(Date.now() + 7200000).toISOString(),
+    home_team: 'Jon Jones',
+    away_team: 'Stipe Miocic',
     bookmakers: [{
       key: 'betmgm',
       title: 'BetMGM',
@@ -121,8 +127,29 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'New York Yankees', price: -140 },
-            { name: 'Boston Red Sox', price: +120 }
+            { name: 'Jon Jones', price: -180 },
+            { name: 'Stipe Miocic', price: +150 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '4',
+    sport_key: 'baseball_mlb',
+    sport_title: 'MLB',
+    commence_time: new Date(Date.now() + 10800000).toISOString(),
+    home_team: 'New York Yankees',
+    away_team: 'Boston Red Sox',
+    bookmakers: [{
+      key: 'caesars',
+      title: 'Caesars',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'New York Yankees', price: -130 },
+            { name: 'Boston Red Sox', price: +110 }
           ]
         },
         {
@@ -143,47 +170,12 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '4',
-    sport_key: 'americanfootball_nfl',
-    sport_title: 'NFL',
-    commence_time: new Date(Date.now() + 10800000).toISOString(),
-    home_team: 'Kansas City Chiefs',
-    away_team: 'Buffalo Bills',
-    bookmakers: [{
-      key: 'caesars',
-      title: 'Caesars',
-      markets: [
-        {
-          key: 'h2h',
-          outcomes: [
-            { name: 'Kansas City Chiefs', price: -150 },
-            { name: 'Buffalo Bills', price: +130 }
-          ]
-        },
-        {
-          key: 'spreads',
-          outcomes: [
-            { name: 'Kansas City Chiefs', price: -110, point: -3.5 },
-            { name: 'Buffalo Bills', price: -110, point: 3.5 }
-          ]
-        },
-        {
-          key: 'totals',
-          outcomes: [
-            { name: 'Over', price: -110, point: 47.5 },
-            { name: 'Under', price: -110, point: 47.5 }
-          ]
-        }
-      ]
-    }]
-  },
-  {
     id: '5',
-    sport_key: 'icehockey_nhl',
-    sport_title: 'NHL',
+    sport_key: 'boxing',
+    sport_title: 'Boxing',
     commence_time: new Date(Date.now() + 14400000).toISOString(),
-    home_team: 'Toronto Maple Leafs',
-    away_team: 'Montreal Canadiens',
+    home_team: 'Canelo Alvarez',
+    away_team: 'Jermall Charlo',
     bookmakers: [{
       key: 'betrivers',
       title: 'BetRivers',
@@ -191,15 +183,8 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'Toronto Maple Leafs', price: -125 },
-            { name: 'Montreal Canadiens', price: +105 }
-          ]
-        },
-        {
-          key: 'totals',
-          outcomes: [
-            { name: 'Over', price: -110, point: 6.5 },
-            { name: 'Under', price: -110, point: 6.5 }
+            { name: 'Canelo Alvarez', price: -250 },
+            { name: 'Jermall Charlo', price: +200 }
           ]
         }
       ]
@@ -207,11 +192,11 @@ const getMockOdds = (): OddsData[] => [
   },
   {
     id: '6',
-    sport_key: 'tennis_atp',
-    sport_title: 'ATP Tennis',
+    sport_key: 'basketball_wnba',
+    sport_title: 'WNBA',
     commence_time: new Date(Date.now() + 18000000).toISOString(),
-    home_team: 'Novak Djokovic',
-    away_team: 'Rafael Nadal',
+    home_team: 'Connecticut Sun',
+    away_team: 'Seattle Storm',
     bookmakers: [{
       key: 'pointsbet',
       title: 'PointsBet',
@@ -219,8 +204,22 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'Novak Djokovic', price: +110 },
-            { name: 'Rafael Nadal', price: -130 }
+            { name: 'Connecticut Sun', price: +115 },
+            { name: 'Seattle Storm', price: -135 }
+          ]
+        },
+        {
+          key: 'spreads',
+          outcomes: [
+            { name: 'Connecticut Sun', price: -110, point: 2.5 },
+            { name: 'Seattle Storm', price: -110, point: -2.5 }
+          ]
+        },
+        {
+          key: 'totals',
+          outcomes: [
+            { name: 'Over', price: -110, point: 158.5 },
+            { name: 'Under', price: -110, point: 158.5 }
           ]
         }
       ]
@@ -228,11 +227,11 @@ const getMockOdds = (): OddsData[] => [
   },
   {
     id: '7',
-    sport_key: 'basketball_ncaab',
-    sport_title: 'NCAA Basketball',
+    sport_key: 'soccer_usa_mls',
+    sport_title: 'MLS',
     commence_time: new Date(Date.now() + 21600000).toISOString(),
-    home_team: 'Duke Blue Devils',
-    away_team: 'UNC Tar Heels',
+    home_team: 'LAFC',
+    away_team: 'LA Galaxy',
     bookmakers: [{
       key: 'unibet',
       title: 'Unibet',
@@ -240,15 +239,16 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'Duke Blue Devils', price: -200 },
-            { name: 'UNC Tar Heels', price: +170 }
+            { name: 'LAFC', price: +140 },
+            { name: 'LA Galaxy', price: +160 },
+            { name: 'Draw', price: +220 }
           ]
         },
         {
-          key: 'spreads',
+          key: 'totals',
           outcomes: [
-            { name: 'Duke Blue Devils', price: -110, point: -5.5 },
-            { name: 'UNC Tar Heels', price: -110, point: 5.5 }
+            { name: 'Over', price: -110, point: 2.5 },
+            { name: 'Under', price: -110, point: 2.5 }
           ]
         }
       ]
@@ -256,11 +256,11 @@ const getMockOdds = (): OddsData[] => [
   },
   {
     id: '8',
-    sport_key: 'soccer_uefa_champs_league',
-    sport_title: 'Champions League',
+    sport_key: 'baseball_mlb',
+    sport_title: 'MLB',
     commence_time: new Date(Date.now() + 25200000).toISOString(),
-    home_team: 'Real Madrid',
-    away_team: 'Barcelona',
+    home_team: 'Atlanta Braves',
+    away_team: 'Philadelphia Phillies',
     bookmakers: [{
       key: 'bet365',
       title: 'Bet365',
@@ -268,9 +268,22 @@ const getMockOdds = (): OddsData[] => [
         {
           key: 'h2h',
           outcomes: [
-            { name: 'Real Madrid', price: +140 },
-            { name: 'Barcelona', price: +160 },
-            { name: 'Draw', price: +220 }
+            { name: 'Atlanta Braves', price: +125 },
+            { name: 'Philadelphia Phillies', price: -145 }
+          ]
+        },
+        {
+          key: 'spreads',
+          outcomes: [
+            { name: 'Atlanta Braves', price: -110, point: 1.5 },
+            { name: 'Philadelphia Phillies', price: -110, point: -1.5 }
+          ]
+        },
+        {
+          key: 'totals',
+          outcomes: [
+            { name: 'Over', price: -105, point: 9.0 },
+            { name: 'Under', price: -115, point: 9.0 }
           ]
         }
       ]
