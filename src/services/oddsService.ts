@@ -119,7 +119,7 @@ const getMockOdds = (): OddsData[] => [
     sport_title: 'UFC',
     commence_time: new Date(Date.now() + 7200000).toISOString(),
     home_team: 'Jon Jones',
-    away_team: 'Stipe Miocic',
+    away_team: 'Tom Aspinall',
     bookmakers: [{
       key: 'betmgm',
       title: 'BetMGM',
@@ -128,7 +128,7 @@ const getMockOdds = (): OddsData[] => [
           key: 'h2h',
           outcomes: [
             { name: 'Jon Jones', price: -180 },
-            { name: 'Stipe Miocic', price: +150 }
+            { name: 'Tom Aspinall', price: +150 }
           ]
         }
       ]
@@ -284,6 +284,56 @@ const getMockOdds = (): OddsData[] => [
           outcomes: [
             { name: 'Over', price: -105, point: 9.0 },
             { name: 'Under', price: -115, point: 9.0 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '9',
+    sport_key: 'basketball_wnba',
+    sport_title: 'WNBA',
+    commence_time: new Date(Date.now() + 28800000).toISOString(),
+    home_team: 'Phoenix Mercury',
+    away_team: 'Minnesota Lynx',
+    bookmakers: [{
+      key: 'draftkings',
+      title: 'DraftKings',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Phoenix Mercury', price: +105 },
+            { name: 'Minnesota Lynx', price: -125 }
+          ]
+        },
+        {
+          key: 'spreads',
+          outcomes: [
+            { name: 'Phoenix Mercury', price: -110, point: 2.5 },
+            { name: 'Minnesota Lynx', price: -110, point: -2.5 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '10',
+    sport_key: 'soccer_usa_mls',
+    sport_title: 'MLS',
+    commence_time: new Date(Date.now() + 32400000).toISOString(),
+    home_team: 'Inter Miami',
+    away_team: 'Atlanta United',
+    bookmakers: [{
+      key: 'fanduel',
+      title: 'FanDuel',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Inter Miami', price: -180 },
+            { name: 'Atlanta United', price: +320 },
+            { name: 'Draw', price: +280 }
           ]
         }
       ]

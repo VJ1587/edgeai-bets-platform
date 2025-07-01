@@ -19,14 +19,65 @@ const Challenges = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState('1v1');
 
+  // Mock squares data for current sports in season (July 2025)
   const mockSquares = [
     {
       id: '1',
-      gameTitle: 'Lakers vs Celtics',
+      gameTitle: 'Las Vegas Aces vs New York Liberty',
       pricePerSquare: 10,
       soldSquares: 67,
       totalSquares: 100,
-      gameDate: '2025-01-15T20:00:00Z'
+      gameDate: '2025-07-15T20:00:00Z'
+    },
+    {
+      id: '2',
+      gameTitle: 'Dodgers vs Giants - Sunday Night Baseball',
+      pricePerSquare: 25,
+      soldSquares: 23,
+      totalSquares: 100,
+      gameDate: '2025-07-20T20:10:00Z'
+    },
+    {
+      id: '3',
+      gameTitle: 'UFC 305: Jones vs Aspinall',
+      pricePerSquare: 50,
+      soldSquares: 89,
+      totalSquares: 100,
+      gameDate: '2025-07-27T22:00:00Z'
+    }
+  ];
+
+  // Mock group bets data for current sports
+  const mockGroupBets = [
+    {
+      id: '1',
+      title: 'WNBA Finals Winner Pool',
+      description: 'Pick who wins the 2025 WNBA Championship',
+      currentAmount: 850,
+      targetAmount: 2000,
+      participants: 17,
+      maxParticipants: 40,
+      closesIn: 'Aug 15, 2025'
+    },
+    {
+      id: '2',
+      title: 'MLB World Series Pool',
+      description: 'Season-long pool for World Series champion',
+      currentAmount: 1250,
+      targetAmount: 3000,
+      participants: 25,
+      maxParticipants: 60,
+      closesIn: 'Oct 1, 2025'
+    },
+    {
+      id: '3',
+      title: 'MLS Cup Winner Challenge',
+      description: 'Pick the 2025 MLS Cup champion',
+      currentAmount: 450,
+      targetAmount: 1000,
+      participants: 9,
+      maxParticipants: 20,
+      closesIn: 'Nov 1, 2025'
     }
   ];
 
@@ -169,38 +220,12 @@ const Challenges = () => {
 
           {/* Group Bets */}
           <TabsContent value="groups" className="space-y-4">
-            {groupBets.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="font-semibold mb-2">No Group Bets Available</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Group bets allow multiple users to pool their money together
-                  </p>
-                  {userProfile?.plan_type !== 'free' && (
-                    <Button onClick={() => setShowCreateModal(true)}>
-                      Create Group Bet
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              groupBets.map((groupBet) => (
-                <GroupBetCard 
-                  key={groupBet.id} 
-                  groupBet={{
-                    id: groupBet.id,
-                    title: `Event: ${groupBet.event_id || 'Custom'}`,
-                    description: `Target: ${groupBet.target_outcome || 'TBD'}`,
-                    currentAmount: groupBet.total_pot || 0,
-                    targetAmount: (groupBet.total_pot || 0) * 2,
-                    participants: Math.floor(Math.random() * 10) + 1,
-                    maxParticipants: 20,
-                    closesIn: groupBet.created_at ? new Date(groupBet.created_at).toLocaleDateString() : 'N/A'
-                  }} 
-                />
-              ))
-            )}
+            {mockGroupBets.map((groupBet) => (
+              <GroupBetCard 
+                key={groupBet.id} 
+                groupBet={groupBet} 
+              />
+            ))}
           </TabsContent>
 
           {/* Squares */}

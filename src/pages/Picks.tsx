@@ -9,54 +9,75 @@ import { PickCard } from '@/components/PickCard';
 const Picks = () => {
   const [selectedSport, setSelectedSport] = useState('all');
   
-  // Mock picks data
+  // Mock picks data for current sports in season (July 2025)
   const picks = [
     {
       id: '1',
-      title: 'Lakers vs Warriors - Lakers +5.5',
-      explanation: 'Strong defensive matchup favors Lakers covering the spread. LeBron historically performs well against Warriors with home court advantage.',
-      confidence: 87,
+      title: 'Las Vegas Aces vs Connecticut Sun - Aces -4.5',
+      explanation: 'Aces are 12-3 at home this season with dominant paint presence. Sun struggling without key starter who is out with injury.',
+      confidence: 89,
       betType: 'Spread',
-      sport: 'NBA',
-      odds: '+110',
+      sport: 'WNBA',
+      odds: '-110',
       createdAt: new Date().toISOString(),
     },
     {
       id: '2',
-      title: 'Chiefs vs Bills Over 52.5',
-      explanation: 'High-powered offenses with weak secondaries. Weather conditions favor passing game and both teams need offensive production.',
-      confidence: 73,
+      title: 'Dodgers vs Giants Over 9.5 Total Runs',
+      explanation: 'Both bullpens have been shaky lately and Dodger Stadium plays well for hitters in July heat. Expect offensive explosion.',
+      confidence: 81,
       betType: 'Total',
-      sport: 'NFL',
+      sport: 'MLB',
       odds: '-105',
       createdAt: new Date().toISOString(),
       isPremium: true
     },
     {
       id: '3',
-      title: '3-Team NBA Parlay',
-      explanation: 'Carefully selected combination of safe spread bets with high payout potential. All three teams have favorable matchups.',
-      confidence: 65,
+      title: '3-Team Baseball Parlay',
+      explanation: 'Carefully selected combination of moneyline favorites with strong starting pitchers. All three teams have favorable matchups.',
+      confidence: 71,
       betType: 'Parlay',
-      sport: 'NBA',
-      odds: '+485',
+      sport: 'MLB',
+      odds: '+285',
       createdAt: new Date().toISOString(),
       isPremium: true
     },
     {
       id: '4',
-      title: 'Dodgers ML vs Padres',
-      explanation: 'Starting pitcher advantage strongly favors Dodgers. Recent head-to-head matchups support this selection.',
-      confidence: 81,
-      betType: 'Moneyline',
-      sport: 'MLB',
-      odds: '-125',
+      title: 'Jon Jones vs Tom Aspinall - Under 2.5 Rounds',
+      explanation: 'Jones historically finishes fights early against less experienced opponents. Aspinall aggressive style could lead to early finish.',
+      confidence: 78,
+      betType: 'Fight Props',
+      sport: 'UFC',
+      odds: '+145',
       createdAt: new Date().toISOString(),
       isPremium: true
+    },
+    {
+      id: '5',
+      title: 'New York Liberty vs Phoenix Mercury - Over 162.5',
+      explanation: 'Both teams play at fast pace and Mercury struggles defensively on the road. Expect high-scoring affair.',
+      confidence: 84,
+      betType: 'Total',
+      sport: 'WNBA',
+      odds: '-108',
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: '6',
+      title: 'LAFC vs LA Galaxy - Both Teams to Score',
+      explanation: 'El Trafico always delivers goals. Both teams have potent attacks and leaky defenses in recent matchups.',
+      confidence: 77,
+      betType: 'Props',
+      sport: 'MLS',
+      odds: '-130',
+      createdAt: new Date().toISOString(),
+      isPremium: false
     }
   ];
 
-  const sports = ['all', 'NBA', 'NFL', 'MLB'];
+  const sports = ['all', 'WNBA', 'MLB', 'UFC', 'MLS'];
   const userPlan = 'Free';
 
   const filteredPicks = selectedSport === 'all' 
@@ -80,7 +101,7 @@ const Picks = () => {
 
         {/* Sports Filter */}
         <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             {sports.map((sport) => (
               <TabsTrigger key={sport} value={sport} className="text-xs">
                 {sport === 'all' ? 'All' : sport}
@@ -92,15 +113,15 @@ const Picks = () => {
         {/* Stats Bar */}
         <div className="flex items-center justify-between mb-6 p-4 bg-card rounded-lg">
           <div className="text-center">
-            <p className="text-lg font-bold text-green-400">12</p>
+            <p className="text-lg font-bold text-green-400">15</p>
             <p className="text-xs text-muted-foreground">Wins Today</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-red-400">4</p>
+            <p className="text-lg font-bold text-red-400">6</p>
             <p className="text-xs text-muted-foreground">Losses</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-primary">75%</p>
+            <p className="text-lg font-bold text-primary">71%</p>
             <p className="text-xs text-muted-foreground">Win Rate</p>
           </div>
         </div>
