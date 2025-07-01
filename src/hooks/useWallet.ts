@@ -38,14 +38,18 @@ export const useWallet = () => {
       console.error('Error fetching wallet:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch wallet');
       
-      // Set mock wallet data for development
+      // Set mock wallet data for development with all required fields
       setWallet({
         id: 'mock-wallet-id',
         user_id: user.id,
         balance: 100.00,
         escrow_held: 0.00,
         margin_status: false,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        last_transaction_at: null,
+        daily_limit: 1000.00,
+        weekly_limit: 5000.00
       });
     } finally {
       setLoading(false);
