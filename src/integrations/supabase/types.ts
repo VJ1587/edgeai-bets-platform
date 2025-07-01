@@ -12,38 +12,50 @@ export type Database = {
       bets: {
         Row: {
           amount: number | null
+          bet_selection: string | null
+          bet_type: string | null
           created_at: string | null
           creator_id: string | null
           event_id: string | null
           expiry_time: string | null
           id: string
+          odds: string | null
           opponent_id: string | null
           outcome: string | null
           status: string | null
+          updated_at: string | null
           vig_percent: number | null
         }
         Insert: {
           amount?: number | null
+          bet_selection?: string | null
+          bet_type?: string | null
           created_at?: string | null
           creator_id?: string | null
           event_id?: string | null
           expiry_time?: string | null
           id?: string
+          odds?: string | null
           opponent_id?: string | null
           outcome?: string | null
           status?: string | null
+          updated_at?: string | null
           vig_percent?: number | null
         }
         Update: {
           amount?: number | null
+          bet_selection?: string | null
+          bet_type?: string | null
           created_at?: string | null
           creator_id?: string | null
           event_id?: string | null
           expiry_time?: string | null
           id?: string
+          odds?: string | null
           opponent_id?: string | null
           outcome?: string | null
           status?: string | null
+          updated_at?: string | null
           vig_percent?: number | null
         }
         Relationships: []
@@ -143,6 +155,63 @@ export type Database = {
         }
         Relationships: []
       }
+      group_challenges: {
+        Row: {
+          bet_type: string
+          created_at: string
+          creator_id: string | null
+          current_amount: number | null
+          description: string | null
+          entry_fee: number
+          event_id: string
+          expiry_time: string
+          id: string
+          max_participants: number | null
+          min_participants: number | null
+          status: string | null
+          target_amount: number
+          title: string
+          updated_at: string
+          vig_percent: number | null
+        }
+        Insert: {
+          bet_type: string
+          created_at?: string
+          creator_id?: string | null
+          current_amount?: number | null
+          description?: string | null
+          entry_fee: number
+          event_id: string
+          expiry_time: string
+          id?: string
+          max_participants?: number | null
+          min_participants?: number | null
+          status?: string | null
+          target_amount: number
+          title: string
+          updated_at?: string
+          vig_percent?: number | null
+        }
+        Update: {
+          bet_type?: string
+          created_at?: string
+          creator_id?: string | null
+          current_amount?: number | null
+          description?: string | null
+          entry_fee?: number
+          event_id?: string
+          expiry_time?: string
+          id?: string
+          max_participants?: number | null
+          min_participants?: number | null
+          status?: string | null
+          target_amount?: number
+          title?: string
+          updated_at?: string
+          vig_percent?: number | null
+        }
+        Relationships: []
+      }
       live_odds: {
         Row: {
           created_at: string | null
@@ -170,6 +239,51 @@ export type Database = {
           odds?: Json | null
           sport_key?: string | null
           start_time?: string | null
+        }
+        Relationships: []
+      }
+      match_odds: {
+        Row: {
+          away_team: string | null
+          bookmaker: string
+          commence_time: string | null
+          created_at: string
+          event_id: string
+          home_team: string | null
+          id: string
+          last_updated: string
+          market: string
+          match_name: string
+          odds_data: Json
+          sport_key: string
+        }
+        Insert: {
+          away_team?: string | null
+          bookmaker: string
+          commence_time?: string | null
+          created_at?: string
+          event_id: string
+          home_team?: string | null
+          id?: string
+          last_updated?: string
+          market: string
+          match_name: string
+          odds_data: Json
+          sport_key: string
+        }
+        Update: {
+          away_team?: string | null
+          bookmaker?: string
+          commence_time?: string | null
+          created_at?: string
+          event_id?: string
+          home_team?: string | null
+          id?: string
+          last_updated?: string
+          market?: string
+          match_name?: string
+          odds_data?: Json
+          sport_key?: string
         }
         Relationships: []
       }
@@ -216,10 +330,15 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          date_of_birth: string | null
           email: string | null
           full_name: string | null
           id: string
+          ip_address: unknown | null
+          kyc_verified: boolean | null
+          kyc_verified_at: string | null
           plan_type: string | null
+          risk_score: number | null
           stripe_customer_id: string | null
           subscription_status: string | null
           updated_at: string
@@ -227,10 +346,15 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          ip_address?: unknown | null
+          kyc_verified?: boolean | null
+          kyc_verified_at?: string | null
           plan_type?: string | null
+          risk_score?: number | null
           stripe_customer_id?: string | null
           subscription_status?: string | null
           updated_at?: string
@@ -238,13 +362,125 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          ip_address?: unknown | null
+          kyc_verified?: boolean | null
+          kyc_verified_at?: string | null
           plan_type?: string | null
+          risk_score?: number | null
           stripe_customer_id?: string | null
           subscription_status?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_bet_audit: {
+        Row: {
+          action_type: string
+          amount_after: number | null
+          amount_before: number | null
+          bet_id: string | null
+          created_at: string
+          escrow_amount: number | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          amount_after?: number | null
+          amount_before?: number | null
+          bet_id?: string | null
+          created_at?: string
+          escrow_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          amount_after?: number | null
+          amount_before?: number | null
+          bet_id?: string | null
+          created_at?: string
+          escrow_amount?: number | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_bet_audit_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_consent_log: {
+        Row: {
+          consent_given: boolean
+          consent_timestamp: string
+          consent_type: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          consent_given: boolean
+          consent_timestamp?: string
+          consent_type: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          consent_given?: boolean
+          consent_timestamp?: string
+          consent_type?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
+      user_events: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -281,26 +517,38 @@ export type Database = {
         Row: {
           balance: number | null
           created_at: string | null
+          daily_limit: number | null
           escrow_held: number | null
           id: string
+          last_transaction_at: string | null
           margin_status: boolean | null
+          updated_at: string | null
           user_id: string | null
+          weekly_limit: number | null
         }
         Insert: {
           balance?: number | null
           created_at?: string | null
+          daily_limit?: number | null
           escrow_held?: number | null
           id?: string
+          last_transaction_at?: string | null
           margin_status?: boolean | null
+          updated_at?: string | null
           user_id?: string | null
+          weekly_limit?: number | null
         }
         Update: {
           balance?: number | null
           created_at?: string | null
+          daily_limit?: number | null
           escrow_held?: number | null
           id?: string
+          last_transaction_at?: string | null
           margin_status?: boolean | null
+          updated_at?: string | null
           user_id?: string | null
+          weekly_limit?: number | null
         }
         Relationships: []
       }
@@ -309,7 +557,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_bet_audit: {
+        Args: {
+          p_user_id: string
+          p_bet_id: string
+          p_action_type: string
+          p_amount_before?: number
+          p_amount_after?: number
+          p_escrow_amount?: number
+          p_metadata?: Json
+        }
+        Returns: string
+      }
+      log_user_event: {
+        Args: {
+          p_user_id: string
+          p_event_type: string
+          p_event_data?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
