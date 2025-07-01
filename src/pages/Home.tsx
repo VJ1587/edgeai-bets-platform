@@ -7,19 +7,20 @@ import { TrendingUp, Target, Star, Zap } from 'lucide-react';
 import { PickCard } from '@/components/PickCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const { userProfile } = useAuth();
   const [picks, setPicks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPicks = async () => {
       const { data: picksData } = await supabase
         .from('picks')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(3);
+        .order('created_at', { ascending: false });
 
       setPicks(picksData || []);
       setLoading(false);
@@ -29,6 +30,37 @@ const Home = () => {
   }, []);
 
   const userPlan = userProfile?.plan_type || 'free';
+  
+  // Define pick limits based on plan
+  const getPickLimit = (plan: string) => {
+    switch (plan) {
+      case 'pro':
+        return 5;
+      case 'elite':
+        return 15;
+      default:
+        return 1;
+    }
+  };
+
+  const pickLimit = getPickLimit(userPlan);
+  const displayedPicks = picks.slice(0, pickLimit);
+
+  const handleUpgrade = async (planType: 'pro' | 'elite') => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planType }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -83,36 +115,108 @@ const Home = () => {
       <div className="px-4 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Today's Picks</h2>
-          <Badge variant="outline">
-            {picks.length} Available
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {displayedPicks.length} of {pickLimit}
+            </Badge>
+            {userPlan === 'free' && (
+              <Badge variant="secondary" className="text-yellow-400">
+                Limited
+              </Badge>
+            )}
+          </div>
         </div>
         
         <div className="space-y-4">
-          {picks.map((pick, index) => (
+          {displayedPicks.map((pick) => (
             <PickCard
               key={pick.id}
               pick={pick}
-              isLocked={pick.is_premium && userPlan === 'free'}
             />
           ))}
         </div>
+
+        {/* Show upgrade prompt if user has reached their limit */}
+        {picks.length > pickLimit && (
+          <div className="mt-4 p-4 bg-card rounded-lg border border-yellow-500/20">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                {picks.length - pickLimit} more picks available
+              </p>
+              <p className="text-xs text-yellow-400">
+                Upgrade to see all picks
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Upgrade Banner */}
+      {/* Plan-specific Upgrade Banners */}
       {userPlan === 'free' && (
-        <div className="mx-4 mb-6">
-          <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <div className="mx-4 mb-6 space-y-4">
+          <Card className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 border-blue-500/20">
             <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/20 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-primary" />
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-500/20 flex items-center justify-center">
+                <Star className="h-6 w-6 text-blue-400" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Unlock Premium Picks</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get up to 15 AI picks daily with our Pro and Elite plans
+              <h3 className="text-lg font-bold mb-2">Upgrade to Pro</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Get 5 AI picks daily for just $29/month
               </p>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                View Plans
+              <p className="text-xs text-blue-400 mb-4">
+                5x more winning opportunities
+              </p>
+              <Button 
+                onClick={() => handleUpgrade('pro')}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+              >
+                Upgrade to Pro - $29/mo
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 border-purple-500/20">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Go Elite</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Get 15 AI picks daily + challenges for $97/month
+              </p>
+              <p className="text-xs text-purple-400 mb-4">
+                Maximum winning potential + social features
+              </p>
+              <Button 
+                onClick={() => handleUpgrade('elite')}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+              >
+                Upgrade to Elite - $97/mo
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {userPlan === 'pro' && (
+        <div className="mx-4 mb-6">
+          <Card className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 border-purple-500/20">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-500/20 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-purple-400" />
+              </div>
+              <h3 className="text-lg font-bold mb-2">Unlock Elite Features</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Get 15 picks daily + challenges + group betting
+              </p>
+              <p className="text-xs text-purple-400 mb-4">
+                3x more picks + social betting features
+              </p>
+              <Button 
+                onClick={() => handleUpgrade('elite')}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+              >
+                Upgrade to Elite - $97/mo
               </Button>
             </CardContent>
           </Card>

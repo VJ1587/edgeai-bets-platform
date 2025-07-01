@@ -3,8 +3,13 @@ import React from 'react';
 import { PlanCard } from '@/components/PlanCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Star, Users, Trophy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Plans = () => {
+  const { userProfile } = useAuth();
+  const currentPlan = userProfile?.plan_type || 'free';
+
   const plans = [
     {
       id: 'free',
@@ -17,7 +22,7 @@ const Plans = () => {
         'Community access',
         'Email notifications'
       ],
-      current: true
+      current: currentPlan === 'free'
     },
     {
       id: 'pro',
@@ -32,7 +37,8 @@ const Plans = () => {
         'Parlay combinations',
         'Historical data access'
       ],
-      popular: true
+      popular: true,
+      current: currentPlan === 'pro'
     },
     {
       id: 'elite',
@@ -46,14 +52,37 @@ const Plans = () => {
         'Direct expert access',
         'VIP community',
         'Guaranteed ROI tracking',
-        'Live pick notifications'
-      ]
+        'Live pick notifications',
+        '1v1 Challenges',
+        'Group betting syndicates',
+        'Squares betting'
+      ],
+      current: currentPlan === 'elite'
     }
   ];
 
-  const handlePlanSelect = (planId: string) => {
-    console.log('Selected plan:', planId);
-    // Will integrate with Stripe checkout
+  const handlePlanSelect = async (planId: string) => {
+    if (planId === 'free' || planId === currentPlan) {
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planType: planId }
+      });
+
+      if (error) {
+        console.error('Error creating checkout:', error);
+        return;
+      }
+
+      if (data?.url) {
+        // Open Stripe checkout in new tab
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   return (

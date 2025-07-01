@@ -13,6 +13,7 @@ import Picks from "./pages/Picks";
 import Plans from "./pages/Plans";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import Success from "./pages/Success";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/success" element={<Success />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <Layout />
