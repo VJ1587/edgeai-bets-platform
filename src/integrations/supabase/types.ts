@@ -9,6 +9,170 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bets: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          creator_id: string | null
+          event_id: string | null
+          expiry_time: string | null
+          id: string
+          opponent_id: string | null
+          outcome: string | null
+          status: string | null
+          vig_percent: number | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          creator_id?: string | null
+          event_id?: string | null
+          expiry_time?: string | null
+          id?: string
+          opponent_id?: string | null
+          outcome?: string | null
+          status?: string | null
+          vig_percent?: number | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          creator_id?: string | null
+          event_id?: string | null
+          expiry_time?: string | null
+          id?: string
+          opponent_id?: string | null
+          outcome?: string | null
+          status?: string | null
+          vig_percent?: number | null
+        }
+        Relationships: []
+      }
+      escrow_wallets: {
+        Row: {
+          amount: number | null
+          bet_id: string | null
+          created_at: string | null
+          id: string
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          bet_id?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          bet_id?: string | null
+          created_at?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      group_bet_contributions: {
+        Row: {
+          amount: number | null
+          group_bet_id: string | null
+          id: string
+          timestamp: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          group_bet_id?: string | null
+          id?: string
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          group_bet_id?: string | null
+          id?: string
+          timestamp?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_bet_contributions_group_bet_id_fkey"
+            columns: ["group_bet_id"]
+            isOneToOne: false
+            referencedRelation: "group_bets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_bets: {
+        Row: {
+          bet_type: string | null
+          created_at: string | null
+          creator_id: string | null
+          event_id: string | null
+          id: string
+          result: string | null
+          status: string | null
+          target_outcome: string | null
+          total_pot: number | null
+        }
+        Insert: {
+          bet_type?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          event_id?: string | null
+          id?: string
+          result?: string | null
+          status?: string | null
+          target_outcome?: string | null
+          total_pot?: number | null
+        }
+        Update: {
+          bet_type?: string | null
+          created_at?: string | null
+          creator_id?: string | null
+          event_id?: string | null
+          id?: string
+          result?: string | null
+          status?: string | null
+          target_outcome?: string | null
+          total_pot?: number | null
+        }
+        Relationships: []
+      }
+      live_odds: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          match_name: string | null
+          odds: Json | null
+          sport_key: string | null
+          start_time: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          match_name?: string | null
+          odds?: Json | null
+          sport_key?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          match_name?: string | null
+          odds?: Json | null
+          sport_key?: string | null
+          start_time?: string | null
+        }
+        Relationships: []
+      }
       picks: {
         Row: {
           bet_type: string
@@ -112,6 +276,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_wallets: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          escrow_held: number | null
+          id: string
+          margin_status: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          escrow_held?: number | null
+          id?: string
+          margin_status?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          escrow_held?: number | null
+          id?: string
+          margin_status?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

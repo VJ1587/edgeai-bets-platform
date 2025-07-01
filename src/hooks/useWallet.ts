@@ -33,8 +33,7 @@ export const useWallet = () => {
 
     try {
       setLoading(true);
-      // Using type assertion to work around type issues until Supabase types are updated
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('user_wallets')
         .select('*')
         .eq('user_id', user.id)
@@ -65,7 +64,7 @@ export const useWallet = () => {
     if (!user || !wallet) return;
 
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('user_wallets')
         .update({ balance: newBalance })
         .eq('user_id', user.id);

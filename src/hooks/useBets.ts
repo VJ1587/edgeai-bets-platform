@@ -61,8 +61,7 @@ export const useBets = () => {
     if (!user) return;
 
     try {
-      // Using type assertion to work around type issues until Supabase types are updated
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('bets')
         .select('*')
         .or(`creator_id.eq.${user.id},opponent_id.eq.${user.id}`)
@@ -79,8 +78,7 @@ export const useBets = () => {
 
   const fetchGroupBets = async () => {
     try {
-      // Using type assertion to work around type issues until Supabase types are updated
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_bets')
         .select('*')
         .order('created_at', { ascending: false });
