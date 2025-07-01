@@ -9,7 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      picks: {
+        Row: {
+          bet_type: string
+          confidence: number
+          created_at: string
+          explanation: string
+          id: string
+          is_premium: boolean | null
+          odds: string
+          sport: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bet_type: string
+          confidence: number
+          created_at?: string
+          explanation: string
+          id?: string
+          is_premium?: boolean | null
+          odds: string
+          sport: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bet_type?: string
+          confidence?: number
+          created_at?: string
+          explanation?: string
+          id?: string
+          is_premium?: boolean | null
+          odds?: string
+          sport?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          plan_type: string | null
+          stripe_customer_id: string | null
+          subscription_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          plan_type?: string | null
+          stripe_customer_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          plan_type?: string | null
+          stripe_customer_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_picks: {
+        Row: {
+          accessed_at: string
+          id: string
+          pick_id: string
+          user_id: string
+        }
+        Insert: {
+          accessed_at?: string
+          id?: string
+          pick_id: string
+          user_id: string
+        }
+        Update: {
+          accessed_at?: string
+          id?: string
+          pick_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_picks_pick_id_fkey"
+            columns: ["pick_id"]
+            isOneToOne: false
+            referencedRelation: "picks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

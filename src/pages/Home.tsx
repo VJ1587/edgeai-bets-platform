@@ -1,49 +1,45 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Target, Star, Zap } from 'lucide-react';
 import { PickCard } from '@/components/PickCard';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Home = () => {
-  // Mock data - will be replaced with real data from Supabase
-  const todaysPicks = [
-    {
-      id: '1',
-      title: 'Lakers vs Warriors - Lakers +5.5',
-      explanation: 'Strong defensive matchup favors Lakers covering the spread. LeBron historically performs well against Warriors.',
-      confidence: 87,
-      betType: 'Spread',
-      sport: 'NBA',
-      odds: '+110',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      title: 'Chiefs vs Bills Over 52.5',
-      explanation: 'High-powered offenses with weak secondaries. Weather conditions favor passing game.',
-      confidence: 73,
-      betType: 'Total',
-      sport: 'NFL',
-      odds: '-105',
-      createdAt: new Date().toISOString(),
-      isPremium: true
-    },
-    {
-      id: '3',
-      title: '3-Team Parlay Special',
-      explanation: 'Carefully selected combination of safe bets with high payout potential.',
-      confidence: 65,
-      betType: 'Parlay',
-      sport: 'Multi',
-      odds: '+485',
-      createdAt: new Date().toISOString(),
-      isPremium: true
-    }
-  ];
+  const { userProfile } = useAuth();
+  const [picks, setPicks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const userPlan = 'Free'; // Will come from auth context
+  useEffect(() => {
+    const fetchPicks = async () => {
+      const { data: picksData } = await supabase
+        .from('picks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      setPicks(picksData || []);
+      setLoading(false);
+    };
+
+    fetchPicks();
+  }, []);
+
+  const userPlan = userProfile?.plan_type || 'free';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground">Loading picks...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -54,7 +50,7 @@ const Home = () => {
             <h1 className="text-2xl font-bold">EdgeStake.ai</h1>
             <p className="text-muted-foreground">AI-Powered Sports Betting</p>
           </div>
-          <Badge variant="secondary" className="text-primary">
+          <Badge variant="secondary" className="text-primary capitalize">
             {userPlan} Plan
           </Badge>
         </div>
@@ -88,23 +84,23 @@ const Home = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Today's Picks</h2>
           <Badge variant="outline">
-            {todaysPicks.length} Available
+            {picks.length} Available
           </Badge>
         </div>
         
         <div className="space-y-4">
-          {todaysPicks.map((pick, index) => (
+          {picks.map((pick, index) => (
             <PickCard
               key={pick.id}
               pick={pick}
-              isLocked={pick.isPremium && userPlan === 'Free'}
+              isLocked={pick.is_premium && userPlan === 'free'}
             />
           ))}
         </div>
       </div>
 
       {/* Upgrade Banner */}
-      {userPlan === 'Free' && (
+      {userPlan === 'free' && (
         <div className="mx-4 mb-6">
           <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
             <CardContent className="p-6 text-center">
