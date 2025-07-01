@@ -1,12 +1,13 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, TrendingUp, User, CreditCard } from 'lucide-react';
+import { Home, TrendingUp, User, CreditCard, BarChart3 } from 'lucide-react';
 
 export const Navigation = () => {
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/picks', icon: TrendingUp, label: 'Picks' },
+    { to: '/lines', icon: BarChart3, label: 'Lines' },
     { to: '/plans', icon: CreditCard, label: 'Plans' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];

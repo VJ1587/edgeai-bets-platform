@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Picks from "./pages/Picks";
+import Lines from "./pages/Lines";
 import Plans from "./pages/Plans";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
@@ -35,6 +36,7 @@ const App = () => (
             }>
               <Route index element={<Home />} />
               <Route path="picks" element={<Picks />} />
+              <Route path="lines" element={<Lines />} />
               <Route path="plans" element={<Plans />} />
               <Route path="profile" element={<Profile />} />
             </Route>
