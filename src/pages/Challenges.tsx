@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +10,7 @@ import { GroupBetCard } from '@/components/GroupBetCard';
 import { SquareCard } from '@/components/SquareCard';
 
 const Challenges = () => {
-  const { user, profile } = useAuth();
+  const { user, userProfile } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState('1v1');
 
@@ -60,7 +59,7 @@ const Challenges = () => {
             <h1 className="text-2xl font-bold">Challenges</h1>
             <p className="text-muted-foreground">Social betting & competitions</p>
           </div>
-          {profile?.plan_type !== 'free' && (
+          {userProfile?.plan_type !== 'free' && (
             <Button onClick={() => setShowCreateModal(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Create
@@ -87,7 +86,7 @@ const Challenges = () => {
         </Card>
 
         {/* Plan Gate for Free Users */}
-        {profile?.plan_type === 'free' && (
+        {userProfile?.plan_type === 'free' && (
           <Card className="mb-6 border-amber-500/20 bg-amber-500/5">
             <CardContent className="p-4 text-center">
               <Trophy className="h-8 w-8 mx-auto mb-2 text-amber-500" />
