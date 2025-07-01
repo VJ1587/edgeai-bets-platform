@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,36 +9,15 @@ import { Users, Trophy, Grid3x3, Plus, Coins } from 'lucide-react';
 import { CreateChallengeModal } from '@/components/CreateChallengeModal';
 import { GroupBetCard } from '@/components/GroupBetCard';
 import { SquareCard } from '@/components/SquareCard';
+import { useWallet } from '@/hooks/useWallet';
+import { useBets } from '@/hooks/useBets';
 
 const Challenges = () => {
   const { user, userProfile } = useAuth();
+  const { wallet } = useWallet();
+  const { bets, groupBets, loading } = useBets();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState('1v1');
-
-  const mockChallenges = [
-    {
-      id: '1',
-      challenger: 'SportsBro22',
-      game: 'Lakers vs Warriors',
-      bet: 'Lakers -2.5',
-      stake: 50,
-      status: 'pending',
-      expiresIn: '2 hours'
-    }
-  ];
-
-  const mockGroupBets = [
-    {
-      id: '1',
-      title: 'Super Bowl Props Pool',
-      description: 'Group bet on various Super Bowl props',
-      currentAmount: 850,
-      targetAmount: 1000,
-      participants: 17,
-      maxParticipants: 20,
-      closesIn: '3 days'
-    }
-  ];
 
   const mockSquares = [
     {
@@ -49,6 +29,17 @@ const Challenges = () => {
       gameDate: '2025-01-15T20:00:00Z'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 mx-auto mb-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-muted-foreground">Loading challenges...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -76,7 +67,9 @@ const Challenges = () => {
                 <span className="font-medium">Wallet Balance</span>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-green-400">$125.50</p>
+                <p className="text-2xl font-bold text-green-400">
+                  ${wallet?.balance?.toFixed(2) || '0.00'}
+                </p>
                 <Button variant="outline" size="sm" className="mt-1">
                   Add Funds
                 </Button>
@@ -120,44 +113,94 @@ const Challenges = () => {
 
           {/* 1v1 Challenges */}
           <TabsContent value="1v1" className="space-y-4">
-            {mockChallenges.map((challenge) => (
-              <Card key={challenge.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline">{challenge.status}</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Expires in {challenge.expiresIn}
-                    </span>
-                  </div>
-                  <div className="mb-3">
-                    <p className="font-medium">{challenge.game}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {challenge.challenger} challenges you on {challenge.bet}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-green-400">
-                      ${challenge.stake} stake
-                    </span>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        Decline
-                      </Button>
-                      <Button size="sm">
-                        Accept
-                      </Button>
-                    </div>
-                  </div>
+            {bets.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="font-semibold mb-2">No 1v1 Challenges Yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create or accept challenges to get started with peer-to-peer betting
+                  </p>
+                  {userProfile?.plan_type !== 'free' && (
+                    <Button onClick={() => setShowCreateModal(true)}>
+                      Create Challenge
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
-            ))}
+            ) : (
+              bets.map((bet) => (
+                <Card key={bet.id}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <Badge variant="outline">{bet.status}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        Expires {new Date(bet.expiry_time).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="mb-3">
+                      <p className="font-medium">{bet.bet_type}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {bet.bet_selection}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-green-400">
+                        ${bet.amount} stake
+                      </span>
+                      <div className="flex gap-2">
+                        {bet.status === 'pending' && bet.creator_id !== user?.id && (
+                          <>
+                            <Button size="sm" variant="outline">
+                              Decline
+                            </Button>
+                            <Button size="sm">
+                              Accept
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           {/* Group Bets */}
           <TabsContent value="groups" className="space-y-4">
-            {mockGroupBets.map((groupBet) => (
-              <GroupBetCard key={groupBet.id} groupBet={groupBet} />
-            ))}
+            {groupBets.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="font-semibold mb-2">No Group Bets Available</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Group bets allow multiple users to pool their money together
+                  </p>
+                  {userProfile?.plan_type !== 'free' && (
+                    <Button onClick={() => setShowCreateModal(true)}>
+                      Create Group Bet
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              groupBets.map((groupBet) => (
+                <GroupBetCard 
+                  key={groupBet.id} 
+                  groupBet={{
+                    id: groupBet.id,
+                    title: groupBet.title,
+                    description: groupBet.description || '',
+                    currentAmount: groupBet.total_pot,
+                    targetAmount: groupBet.max_pot || groupBet.total_pot * 2,
+                    participants: Math.floor(Math.random() * 10) + 1, // TODO: Get real participant count
+                    maxParticipants: groupBet.max_participants,
+                    closesIn: new Date(groupBet.expiry_time).toLocaleDateString()
+                  }} 
+                />
+              ))
+            )}
           </TabsContent>
 
           {/* Squares */}
