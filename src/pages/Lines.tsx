@@ -83,12 +83,16 @@ const Lines = () => {
           </div>
         </div>
 
-        {/* Sports Filter */}
+        {/* Sports Filter - Show all sports in a scrollable horizontal tabs */}
         <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-6">
-          <TabsList className="grid w-full grid-cols-4">
-            {sports.slice(0, 4).map((sport) => (
-              <TabsTrigger key={sport} value={sport} className="text-xs">
-                {sport === 'all' ? 'All' : sport}
+          <TabsList className="w-full overflow-x-auto flex justify-start">
+            {sports.map((sport) => (
+              <TabsTrigger 
+                key={sport} 
+                value={sport} 
+                className="text-xs whitespace-nowrap px-4"
+              >
+                {sport === 'all' ? 'All Sports' : sport}
               </TabsTrigger>
             ))}
           </TabsList>
