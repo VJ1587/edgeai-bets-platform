@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +16,83 @@ const Home = () => {
 
   useEffect(() => {
     const fetchPicks = async () => {
-      const { data: picksData } = await supabase
-        .from('picks')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Use mock data for current sports in season (July 2025)
+      const mockPicks = [
+        {
+          id: '1',
+          title: 'Las Vegas Aces vs New York Liberty',
+          sport: 'WNBA',
+          bet_type: 'Moneyline',
+          odds: '-140',
+          confidence: 87,
+          explanation: 'The Aces are dominating at home this season with A\'ja Wilson leading MVP race. Liberty struggling on road games.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_premium: false
+        },
+        {
+          id: '2',
+          title: 'Los Angeles Dodgers vs San Francisco Giants',
+          sport: 'MLB',
+          bet_type: 'Run Line',
+          odds: '-1.5 (-110)',
+          confidence: 82,
+          explanation: 'Dodgers have won 8 of last 10 against Giants. Mookie Betts is heating up and their bullpen is elite.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_premium: false
+        },
+        {
+          id: '3',
+          title: 'Jon Jones vs Stipe Miocic',
+          sport: 'UFC',
+          bet_type: 'Moneyline',
+          odds: '-180',
+          confidence: 91,
+          explanation: 'Jones has incredible reach advantage and wrestling dominance. Miocic coming off long layoff.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_premium: true
+        },
+        {
+          id: '4',
+          title: 'New York Yankees vs Boston Red Sox',
+          sport: 'MLB',
+          bet_type: 'Over/Under',
+          odds: 'Over 8.5 (-110)',
+          confidence: 79,
+          explanation: 'Both teams have been scoring heavily lately. Fenway Park favorable for hitters in summer conditions.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_premium: false
+        },
+        {
+          id: '5',
+          title: 'Connecticut Sun vs Seattle Storm',
+          sport: 'WNBA',
+          bet_type: 'Spread',
+          odds: '+2.5 (-110)',
+          confidence: 85,
+          explanation: 'Sun playing exceptional defense at home. Storm missing key player due to injury.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_premium: true
+        },
+        {
+          id: '6',
+          title: 'Canelo Alvarez vs Jermall Charlo',
+          sport: 'Boxing',
+          bet_type: 'Method of Victory',
+          odds: 'Canelo by Decision (+150)',
+          confidence: 76,
+          explanation: 'Both fighters prefer to box rather than brawl. Expect tactical 12-round fight.',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_premium: true
+        }
+      ];
 
-      setPicks(picksData || []);
+      setPicks(mockPicks);
       setLoading(false);
     };
 
