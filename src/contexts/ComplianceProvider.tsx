@@ -26,9 +26,10 @@ export const ComplianceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const { hasValidConsent, logUserEvent, loading } = useCompliance();
   const [showConsent, setShowConsent] = useState(false);
   const [needsConsent, setNeedsConsent] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !consentChecked) {
       // Check if user needs to give consent
       const hasTerms = hasValidConsent('terms');
       const hasPrivacy = hasValidConsent('privacy');
@@ -36,20 +37,20 @@ export const ComplianceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       
       const needsConsentCheck = !hasTerms || !hasPrivacy || !hasGdpr;
       setNeedsConsent(needsConsentCheck);
+      setConsentChecked(true);
       
       if (needsConsentCheck) {
         setShowConsent(true);
-      }
-
-      // Log login event
-      if (!needsConsentCheck) {
+      } else {
+        // Log login event for users who already have consent
         logUserEvent('login', { timestamp: new Date().toISOString() });
       }
     }
-  }, [user, loading, hasValidConsent, logUserEvent]);
+  }, [user, loading, hasValidConsent, logUserEvent, consentChecked]);
 
   const handleConsentGiven = () => {
     setNeedsConsent(false);
+    setShowConsent(false);
     // Log login event after consent is given
     logUserEvent('login', { timestamp: new Date().toISOString() });
   };
@@ -70,7 +71,7 @@ export const ComplianceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       {children}
       <ConsentModal
         isOpen={showConsent}
-        onClose={() => setShowConsent(false)}
+        onClose={() => {}} // Prevent manual closing
         onConsentGiven={handleConsentGiven}
       />
     </ComplianceContext.Provider>
