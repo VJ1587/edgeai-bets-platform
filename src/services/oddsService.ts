@@ -141,5 +141,139 @@ const getMockOdds = (): OddsData[] => [
         }
       ]
     }]
+  },
+  {
+    id: '4',
+    sport_key: 'americanfootball_nfl',
+    sport_title: 'NFL',
+    commence_time: new Date(Date.now() + 10800000).toISOString(),
+    home_team: 'Kansas City Chiefs',
+    away_team: 'Buffalo Bills',
+    bookmakers: [{
+      key: 'caesars',
+      title: 'Caesars',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Kansas City Chiefs', price: -150 },
+            { name: 'Buffalo Bills', price: +130 }
+          ]
+        },
+        {
+          key: 'spreads',
+          outcomes: [
+            { name: 'Kansas City Chiefs', price: -110, point: -3.5 },
+            { name: 'Buffalo Bills', price: -110, point: 3.5 }
+          ]
+        },
+        {
+          key: 'totals',
+          outcomes: [
+            { name: 'Over', price: -110, point: 47.5 },
+            { name: 'Under', price: -110, point: 47.5 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '5',
+    sport_key: 'icehockey_nhl',
+    sport_title: 'NHL',
+    commence_time: new Date(Date.now() + 14400000).toISOString(),
+    home_team: 'Toronto Maple Leafs',
+    away_team: 'Montreal Canadiens',
+    bookmakers: [{
+      key: 'betrivers',
+      title: 'BetRivers',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Toronto Maple Leafs', price: -125 },
+            { name: 'Montreal Canadiens', price: +105 }
+          ]
+        },
+        {
+          key: 'totals',
+          outcomes: [
+            { name: 'Over', price: -110, point: 6.5 },
+            { name: 'Under', price: -110, point: 6.5 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '6',
+    sport_key: 'tennis_atp',
+    sport_title: 'ATP Tennis',
+    commence_time: new Date(Date.now() + 18000000).toISOString(),
+    home_team: 'Novak Djokovic',
+    away_team: 'Rafael Nadal',
+    bookmakers: [{
+      key: 'pointsbet',
+      title: 'PointsBet',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Novak Djokovic', price: +110 },
+            { name: 'Rafael Nadal', price: -130 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '7',
+    sport_key: 'basketball_ncaab',
+    sport_title: 'NCAA Basketball',
+    commence_time: new Date(Date.now() + 21600000).toISOString(),
+    home_team: 'Duke Blue Devils',
+    away_team: 'UNC Tar Heels',
+    bookmakers: [{
+      key: 'unibet',
+      title: 'Unibet',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Duke Blue Devils', price: -200 },
+            { name: 'UNC Tar Heels', price: +170 }
+          ]
+        },
+        {
+          key: 'spreads',
+          outcomes: [
+            { name: 'Duke Blue Devils', price: -110, point: -5.5 },
+            { name: 'UNC Tar Heels', price: -110, point: 5.5 }
+          ]
+        }
+      ]
+    }]
+  },
+  {
+    id: '8',
+    sport_key: 'soccer_uefa_champs_league',
+    sport_title: 'Champions League',
+    commence_time: new Date(Date.now() + 25200000).toISOString(),
+    home_team: 'Real Madrid',
+    away_team: 'Barcelona',
+    bookmakers: [{
+      key: 'bet365',
+      title: 'Bet365',
+      markets: [
+        {
+          key: 'h2h',
+          outcomes: [
+            { name: 'Real Madrid', price: +140 },
+            { name: 'Barcelona', price: +160 },
+            { name: 'Draw', price: +220 }
+          ]
+        }
+      ]
+    }]
   }
 ];
