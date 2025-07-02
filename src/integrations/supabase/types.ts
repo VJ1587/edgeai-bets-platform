@@ -558,25 +558,29 @@ export type Database = {
     }
     Functions: {
       log_bet_audit: {
-        Args: {
-          p_user_id: string
-          p_bet_id: string
-          p_action_type: string
-          p_amount_before?: number
-          p_amount_after?: number
-          p_escrow_amount?: number
-          p_metadata?: Json
-        }
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              p_user_id: string
+              p_bet_id: string
+              p_action_type: string
+              p_amount_before?: number
+              p_amount_after?: number
+              p_escrow_amount?: number
+              p_metadata?: Json
+            }
         Returns: string
       }
       log_user_event: {
-        Args: {
-          p_user_id: string
-          p_event_type: string
-          p_event_data?: Json
-          p_ip_address?: unknown
-          p_user_agent?: string
-        }
+        Args:
+          | Record<PropertyKey, never>
+          | {
+              p_user_id: string
+              p_event_type: string
+              p_event_data?: Json
+              p_ip_address?: unknown
+              p_user_agent?: string
+            }
         Returns: string
       }
     }

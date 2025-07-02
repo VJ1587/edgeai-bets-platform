@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { validateAndSanitizeText, validateBettingAmount } from '@/lib/validation';
+import { toast } from '@/hooks/use-toast';
 
 interface CreateChallengeModalProps {
   open: boolean;
@@ -28,7 +30,60 @@ export const CreateChallengeModal: React.FC<CreateChallengeModalProps> = ({ open
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Creating challenge:', { type: challengeType, ...formData });
+    
+    // Validate and sanitize inputs
+    const titleValidation = validateAndSanitizeText(formData.title, 100);
+    const descriptionValidation = validateAndSanitizeText(formData.description, 500);
+    const opponentValidation = validateAndSanitizeText(formData.opponent, 50);
+    
+    if (!titleValidation.isValid && formData.title) {
+      toast({ variant: "destructive", description: titleValidation.error });
+      return;
+    }
+    
+    if (!descriptionValidation.isValid && formData.description) {
+      toast({ variant: "destructive", description: descriptionValidation.error });
+      return;
+    }
+    
+    if (!opponentValidation.isValid && formData.opponent) {
+      toast({ variant: "destructive", description: opponentValidation.error });
+      return;
+    }
+    
+    // Validate betting amounts
+    if (formData.stake) {
+      const stakeAmount = parseFloat(formData.stake);
+      const stakeValidation = validateBettingAmount(stakeAmount);
+      if (!stakeValidation.isValid) {
+        toast({ variant: "destructive", description: stakeValidation.error });
+        return;
+      }
+    }
+    
+    if (formData.targetAmount) {
+      const targetAmount = parseFloat(formData.targetAmount);
+      if (targetAmount < 50 || targetAmount > 50000) {
+        toast({ variant: "destructive", description: "Target amount must be between $50 and $50,000" });
+        return;
+      }
+    }
+    
+    // Create sanitized form data
+    const sanitizedData = {
+      type: challengeType,
+      title: titleValidation.sanitized,
+      description: descriptionValidation.sanitized,
+      opponent: opponentValidation.sanitized,
+      game: formData.game,
+      betType: formData.betType,
+      stake: formData.stake,
+      targetAmount: formData.targetAmount,
+      maxParticipants: formData.maxParticipants
+    };
+    
+    console.log('Creating challenge:', sanitizedData);
+    toast({ description: "Challenge created successfully!" });
     onClose();
   };
 

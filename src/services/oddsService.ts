@@ -1,6 +1,5 @@
 
-const ODDS_API_KEY = 'demo-key'; // You'll need to get a real API key from the-odds-api.com
-const BASE_URL = 'https://api.the-odds-api.com/v4';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface OddsData {
   id: string;
@@ -25,16 +24,15 @@ export interface OddsData {
 
 export const fetchLiveOdds = async (sport = 'upcoming'): Promise<OddsData[]> => {
   try {
-    const response = await fetch(
-      `${BASE_URL}/sports/${sport}/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`
-    );
+    const { data, error } = await supabase.functions.invoke('fetch-odds', {
+      body: { sport }
+    });
     
-    if (!response.ok) {
-      // Return mock data for demo purposes
+    if (error) {
+      console.error('Error fetching odds:', error);
       return getMockOdds();
     }
     
-    const data = await response.json();
     return data || [];
   } catch (error) {
     console.error('Error fetching odds:', error);

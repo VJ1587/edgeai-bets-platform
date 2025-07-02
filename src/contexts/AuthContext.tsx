@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { passwordSchema, emailSchema } from '@/lib/validation';
 
 interface AuthContextType {
   user: User | null;
@@ -80,10 +81,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
+    // Validate inputs before making API call
+    try {
+      emailSchema.parse(email);
+      passwordSchema.parse(password);
+    } catch (error: any) {
+      const errorMessage = error?.errors?.[0]?.message || 'Invalid input';
+      toast({
+        title: "Validation Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return { error: new Error(errorMessage) };
+    }
+
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
-      email,
+      email: email.toLowerCase().trim(),
       password,
       options: {
         emailRedirectTo: redirectUrl,
@@ -110,15 +125,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    // Validate email format before making API call
+    try {
+      emailSchema.parse(email);
+    } catch (error: any) {
+      const errorMessage = 'Please enter a valid email address';
+      toast({
+        title: "Validation Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return { error: new Error(errorMessage) };
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: email.toLowerCase().trim(),
       password
     });
 
     if (error) {
+      // Provide generic error message for security
+      const secureErrorMessage = error.message.includes('Invalid login credentials') 
+        ? 'Invalid email or password'
+        : error.message;
+      
       toast({
         title: "Login Error",
-        description: error.message,
+        description: secureErrorMessage,
         variant: "destructive"
       });
     } else {
