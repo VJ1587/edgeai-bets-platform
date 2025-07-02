@@ -1,9 +1,12 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, TrendingUp, User, CreditCard, BarChart3, Trophy } from 'lucide-react';
+import { Home, TrendingUp, User, CreditCard, BarChart3, Trophy, Building } from 'lucide-react';
+import { useBookieOperator } from '@/hooks/useBookieOperator';
 
 export const Navigation = () => {
+  const { operator, isBookieOperator } = useBookieOperator();
+
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/picks', icon: TrendingUp, label: 'Picks' },
@@ -11,6 +14,17 @@ export const Navigation = () => {
     { to: '/challenges', icon: Trophy, label: 'Challenges' },
     { to: '/profile', icon: User, label: 'Profile' },
   ];
+
+  // Add bookie navigation based on status
+  if (operator) {
+    if (isBookieOperator) {
+      navItems.splice(4, 0, { to: '/bookie-dashboard', icon: Building, label: 'Bookie' });
+    } else {
+      navItems.splice(4, 0, { to: '/bookie-licensing', icon: Building, label: 'Bookie' });
+    }
+  } else {
+    navItems.splice(4, 0, { to: '/bookie-licensing', icon: Building, label: 'Bookie' });
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 z-50">

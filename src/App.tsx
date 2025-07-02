@@ -19,6 +19,8 @@ import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import Success from "./pages/Success";
 import NotFound from "./pages/NotFound";
+import BookieLicensing from "./pages/BookieLicensing";
+import BookieDashboard from "./pages/BookieDashboard";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ const App = () => (
                 <Route path="challenges" element={<Challenges />} />
                 <Route path="plans" element={<Plans />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="bookie-licensing" element={<BookieLicensing />} />
+                <Route path="bookie-dashboard" element={<BookieDashboard />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
