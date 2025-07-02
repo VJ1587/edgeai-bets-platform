@@ -60,6 +60,469 @@ export type Database = {
         }
         Relationships: []
       }
+      bookie_audit_log: {
+        Row: {
+          action_type: string
+          actor_id: string
+          bookie_id: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_values: Json | null
+          old_values: Json | null
+          reason: string | null
+          target_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_type: string
+          actor_id: string
+          bookie_id: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          reason?: string | null
+          target_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_type?: string
+          actor_id?: string
+          bookie_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_values?: Json | null
+          old_values?: Json | null
+          reason?: string | null
+          target_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_audit_log_bookie_id_fkey"
+            columns: ["bookie_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookie_credit_lines: {
+        Row: {
+          approved_by: string | null
+          available_credit: number
+          bookie_id: string
+          collateral_amount: number
+          collateral_type: string
+          created_at: string
+          credit_limit: number
+          id: string
+          interest_rate: number
+          next_review_date: string | null
+          risk_score: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          available_credit: number
+          bookie_id: string
+          collateral_amount: number
+          collateral_type: string
+          created_at?: string
+          credit_limit: number
+          id?: string
+          interest_rate?: number
+          next_review_date?: string | null
+          risk_score?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          available_credit?: number
+          bookie_id?: string
+          collateral_amount?: number
+          collateral_type?: string
+          created_at?: string
+          credit_limit?: number
+          id?: string
+          interest_rate?: number
+          next_review_date?: string | null
+          risk_score?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_credit_lines_bookie_id_fkey"
+            columns: ["bookie_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookie_lines: {
+        Row: {
+          bookie_id: string
+          created_at: string
+          event_id: string
+          expiry_time: string
+          id: string
+          is_active: boolean
+          is_private: boolean
+          market_type: string
+          match_name: string
+          odds: number
+          selection: string
+          sport_key: string
+          stake_limit: number
+          updated_at: string
+        }
+        Insert: {
+          bookie_id: string
+          created_at?: string
+          event_id: string
+          expiry_time: string
+          id?: string
+          is_active?: boolean
+          is_private?: boolean
+          market_type: string
+          match_name: string
+          odds: number
+          selection: string
+          sport_key: string
+          stake_limit?: number
+          updated_at?: string
+        }
+        Update: {
+          bookie_id?: string
+          created_at?: string
+          event_id?: string
+          expiry_time?: string
+          id?: string
+          is_active?: boolean
+          is_private?: boolean
+          market_type?: string
+          match_name?: string
+          odds?: number
+          selection?: string
+          sport_key?: string
+          stake_limit?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_lines_bookie_id_fkey"
+            columns: ["bookie_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookie_operators: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          bank_account_verified: boolean
+          business_name: string
+          created_at: string
+          crypto_escrow_verified: boolean
+          id: string
+          kyc_verified: boolean
+          kyc_verified_at: string | null
+          license_number: string | null
+          liquidity_validated: boolean
+          liquidity_validated_at: string | null
+          monthly_fee: number
+          status: Database["public"]["Enums"]["bookie_status"]
+          tier: Database["public"]["Enums"]["bookie_tier_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_verified?: boolean
+          business_name: string
+          created_at?: string
+          crypto_escrow_verified?: boolean
+          id?: string
+          kyc_verified?: boolean
+          kyc_verified_at?: string | null
+          license_number?: string | null
+          liquidity_validated?: boolean
+          liquidity_validated_at?: string | null
+          monthly_fee: number
+          status?: Database["public"]["Enums"]["bookie_status"]
+          tier?: Database["public"]["Enums"]["bookie_tier_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_account_verified?: boolean
+          business_name?: string
+          created_at?: string
+          crypto_escrow_verified?: boolean
+          id?: string
+          kyc_verified?: boolean
+          kyc_verified_at?: string | null
+          license_number?: string | null
+          liquidity_validated?: boolean
+          liquidity_validated_at?: string | null
+          monthly_fee?: number
+          status?: Database["public"]["Enums"]["bookie_status"]
+          tier?: Database["public"]["Enums"]["bookie_tier_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bookie_payouts: {
+        Row: {
+          bet_id: string | null
+          bookie_id: string
+          created_at: string
+          escrow_fee: number
+          gross_win: number
+          hold_reason: string | null
+          hold_until: string | null
+          id: string
+          net_payout: number
+          platform_fee: number
+          processed_at: string | null
+          status: string
+          syndicate_id: string | null
+          user_id: string
+          vig_amount: number
+        }
+        Insert: {
+          bet_id?: string | null
+          bookie_id: string
+          created_at?: string
+          escrow_fee: number
+          gross_win: number
+          hold_reason?: string | null
+          hold_until?: string | null
+          id?: string
+          net_payout: number
+          platform_fee: number
+          processed_at?: string | null
+          status?: string
+          syndicate_id?: string | null
+          user_id: string
+          vig_amount: number
+        }
+        Update: {
+          bet_id?: string | null
+          bookie_id?: string
+          created_at?: string
+          escrow_fee?: number
+          gross_win?: number
+          hold_reason?: string | null
+          hold_until?: string | null
+          id?: string
+          net_payout?: number
+          platform_fee?: number
+          processed_at?: string | null
+          status?: string
+          syndicate_id?: string | null
+          user_id?: string
+          vig_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_payouts_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookie_payouts_bookie_id_fkey"
+            columns: ["bookie_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookie_payouts_syndicate_id_fkey"
+            columns: ["syndicate_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_syndicates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookie_syndicate_participants: {
+        Row: {
+          amount: number
+          id: string
+          joined_at: string
+          syndicate_id: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          joined_at?: string
+          syndicate_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          joined_at?: string
+          syndicate_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_syndicate_participants_syndicate_id_fkey"
+            columns: ["syndicate_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_syndicates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookie_syndicates: {
+        Row: {
+          bookie_id: string
+          closes_at: string
+          created_at: string
+          current_amount: number
+          description: string | null
+          id: string
+          is_private: boolean
+          line_id: string
+          max_participants: number
+          min_participants: number
+          status: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          bookie_id: string
+          closes_at: string
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          is_private?: boolean
+          line_id: string
+          max_participants?: number
+          min_participants?: number
+          status?: string
+          target_amount: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          bookie_id?: string
+          closes_at?: string
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          is_private?: boolean
+          line_id?: string
+          max_participants?: number
+          min_participants?: number
+          status?: string
+          target_amount?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_syndicates_bookie_id_fkey"
+            columns: ["bookie_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookie_syndicates_line_id_fkey"
+            columns: ["line_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_lines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookie_transactions: {
+        Row: {
+          bet_id: string | null
+          bookie_id: string
+          escrow_fee: number
+          gross_amount: number
+          id: string
+          metadata: Json | null
+          net_amount: number
+          platform_fee: number
+          processed_at: string
+          syndicate_id: string | null
+          transaction_type: string
+        }
+        Insert: {
+          bet_id?: string | null
+          bookie_id: string
+          escrow_fee?: number
+          gross_amount: number
+          id?: string
+          metadata?: Json | null
+          net_amount: number
+          platform_fee?: number
+          processed_at?: string
+          syndicate_id?: string | null
+          transaction_type: string
+        }
+        Update: {
+          bet_id?: string | null
+          bookie_id?: string
+          escrow_fee?: number
+          gross_amount?: number
+          id?: string
+          metadata?: Json | null
+          net_amount?: number
+          platform_fee?: number
+          processed_at?: string
+          syndicate_id?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookie_transactions_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookie_transactions_bookie_id_fkey"
+            columns: ["bookie_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookie_transactions_syndicate_id_fkey"
+            columns: ["syndicate_id"]
+            isOneToOne: false
+            referencedRelation: "bookie_syndicates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escrow_wallets: {
         Row: {
           amount: number | null
@@ -557,6 +1020,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_bookie_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_bookie_operator: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_bet_audit: {
         Args:
           | Record<PropertyKey, never>
@@ -585,7 +1056,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      bookie_status: "pending" | "active" | "suspended" | "terminated"
+      bookie_tier_type: "starter" | "pro" | "elite"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -700,6 +1172,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      bookie_status: ["pending", "active", "suspended", "terminated"],
+      bookie_tier_type: ["starter", "pro", "elite"],
+    },
   },
 } as const
