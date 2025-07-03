@@ -26,6 +26,94 @@ interface OddsData {
   }>;
 }
 
+function getMockOddsResponse(): Response {
+  console.log('📦 Returning mock odds data');
+  
+  const mockOdds: OddsData[] = [
+    {
+      id: 'mock-1',
+      sport_key: 'basketball_wnba',
+      sport_title: 'WNBA',
+      commence_time: new Date(Date.now() + 3600000).toISOString(),
+      home_team: 'Las Vegas Aces',
+      away_team: 'New York Liberty',
+      bookmakers: [{
+        key: 'draftkings',
+        title: 'DraftKings',
+        markets: [
+          {
+            key: 'h2h',
+            outcomes: [
+              { name: 'Las Vegas Aces', price: -140 },
+              { name: 'New York Liberty', price: 120 }
+            ]
+          },
+          {
+            key: 'spreads',
+            outcomes: [
+              { name: 'Las Vegas Aces', price: -110, point: -3.5 },
+              { name: 'New York Liberty', price: -110, point: 3.5 }
+            ]
+          },
+          {
+            key: 'totals',
+            outcomes: [
+              { name: 'Over', price: -110, point: 165.5 },
+              { name: 'Under', price: -110, point: 165.5 }
+            ]
+          }
+        ]
+      }]
+    },
+    {
+      id: 'mock-2',
+      sport_key: 'baseball_mlb',
+      sport_title: 'MLB',
+      commence_time: new Date(Date.now() + 5400000).toISOString(),
+      home_team: 'Los Angeles Dodgers',
+      away_team: 'San Francisco Giants',
+      bookmakers: [{
+        key: 'fanduel',
+        title: 'FanDuel',
+        markets: [
+          {
+            key: 'h2h',
+            outcomes: [
+              { name: 'Los Angeles Dodgers', price: -165 },
+              { name: 'San Francisco Giants', price: 140 }
+            ]
+          },
+          {
+            key: 'spreads',
+            outcomes: [
+              { name: 'Los Angeles Dodgers', price: -110, point: -1.5 },
+              { name: 'San Francisco Giants', price: -110, point: 1.5 }
+            ]
+          },
+          {
+            key: 'totals',
+            outcomes: [
+              { name: 'Over', price: -105, point: 9.5 },
+              { name: 'Under', price: -115, point: 9.5 }
+            ]
+          }
+        ]
+      }]
+    }
+  ];
+
+  return new Response(
+    JSON.stringify(mockOdds),
+    {
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json' 
+      },
+      status: 200,
+    }
+  );
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -126,91 +214,3 @@ Deno.serve(async (req) => {
     return getMockOddsResponse();
   }
 });
-
-function getMockOddsResponse(): Response {
-  console.log('📦 Returning mock odds data');
-  
-  const mockOdds: OddsData[] = [
-    {
-      id: 'mock-1',
-      sport_key: 'basketball_wnba',
-      sport_title: 'WNBA',
-      commence_time: new Date(Date.now() + 3600000).toISOString(),
-      home_team: 'Las Vegas Aces',
-      away_team: 'New York Liberty',
-      bookmakers: [{
-        key: 'draftkings',
-        title: 'DraftKings',
-        markets: [
-          {
-            key: 'h2h',
-            outcomes: [
-              { name: 'Las Vegas Aces', price: -140 },
-              { name: 'New York Liberty', price: +120 }
-            ]
-          },
-          {
-            key: 'spreads',
-            outcomes: [
-              { name: 'Las Vegas Aces', price: -110, point: -3.5 },
-              { name: 'New York Liberty', price: -110, point: 3.5 }
-            ]
-          },
-          {
-            key: 'totals',
-            outcomes: [
-              { name: 'Over', price: -110, point: 165.5 },
-              { name: 'Under', price: -110, point: 165.5 }
-            ]
-          }
-        ]
-      }]
-    },
-    {
-      id: 'mock-2',
-      sport_key: 'baseball_mlb',
-      sport_title: 'MLB',
-      commence_time: new Date(Date.now() + 5400000).toISOString(),
-      home_team: 'Los Angeles Dodgers',
-      away_team: 'San Francisco Giants',
-      bookmakers: [{
-        key: 'fanduel',
-        title: 'FanDuel',
-        markets: [
-          {
-            key: 'h2h',
-            outcomes: [
-              { name: 'Los Angeles Dodgers', price: -165 },
-              { name: 'San Francisco Giants', price: +140 }
-            ]
-          },
-          {
-            key: 'spreads',
-            outcomes: [
-              { name: 'Los Angeles Dodgers', price: -110, point: -1.5 },
-              { name: 'San Francisco Giants', price: -110, point: 1.5 }
-            ]
-          },
-          {
-            key: 'totals',
-            outcomes: [
-              { name: 'Over', price: -105, point: 9.5 },
-              { name: 'Under', price: -115, point: 9.5 }
-            ]
-          }
-        ]
-      }]
-    }
-  ];
-
-  return new Response(
-    JSON.stringify(mockOdds),
-    {
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json' 
-      },
-      status: 200,
-    }
-  );
-}
