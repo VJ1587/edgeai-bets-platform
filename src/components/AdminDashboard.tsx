@@ -333,7 +333,7 @@ export const AdminDashboard: React.FC = () => {
                 <Alert>
                   <Settings className="h-4 w-4" />
                   <AlertDescription>
-                    Platform Fee: 2.5% | Escrow Fee: 1% (bets > $5,000)
+                    Platform Fee: 2.5% | Escrow Fee: 1% (bets {'>'}$5,000)
                     <br />
                     Daily payout limit: $10,000 | Weekly limit: $50,000
                   </AlertDescription>

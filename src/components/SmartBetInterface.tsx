@@ -224,8 +224,8 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
         <Alert>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Large wagers (>$5,000) are subject to validation delays. 
-            Platform fee: 2.5% | Escrow fee: 1% (on bets >$5,000)
+            Large wagers ({'>'}$5,000) are subject to validation delays. 
+            Platform fee: 2.5% | Escrow fee: 1% (on bets {'>'}$5,000)
           </AlertDescription>
         </Alert>
       )}
