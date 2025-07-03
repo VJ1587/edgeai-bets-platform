@@ -5,10 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { WalletOnboarding } from '@/components/WalletOnboarding';
 import { SmartBetInterface } from '@/components/SmartBetInterface';
+import { HeadToHeadBetting } from '@/components/HeadToHeadBetting';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { useWallet } from '@/hooks/useWallet';
 import { fetchLiveOdds, OddsData } from '@/services/oddsService';
-import { Shield, TrendingUp, Users, Wallet } from 'lucide-react';
+import { Shield, TrendingUp, Users, Wallet, Trophy } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -62,13 +63,20 @@ const Dashboard = () => {
         </div>
 
         <Tabs defaultValue="betting" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-2 gap-1 bg-card/50">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto p-2 gap-1 bg-card/50">
             <TabsTrigger 
               value="betting" 
               className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
             >
               <TrendingUp className="h-5 w-5" />
               <span>Betting</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="h2h" 
+              className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
+            >
+              <Trophy className="h-5 w-5" />
+              <span>Head-to-Head</span>
             </TabsTrigger>
             <TabsTrigger 
               value="wallet" 
@@ -102,6 +110,16 @@ const Dashboard = () => {
               </div>
             ) : (
               <SmartBetInterface games={games} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="h2h" className="mt-6">
+            {gamesLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <HeadToHeadBetting games={games} />
             )}
           </TabsContent>
 
