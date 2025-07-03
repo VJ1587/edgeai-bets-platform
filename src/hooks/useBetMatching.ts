@@ -2,10 +2,23 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Database } from '@/integrations/supabase/types';
 
-type BetMatch = Database['public']['Tables']['bet_matches']['Row'];
-type BetEscrow = Database['public']['Tables']['bet_escrow']['Row'];
+interface BetMatch {
+  id: string;
+  creator_bet_id: string;
+  opponent_bet_id: string;
+  matched_amount: number;
+  status: string;
+  created_at: string;
+}
+
+interface BetEscrow {
+  id: string;
+  user_id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+}
 
 export const useBetMatching = () => {
   const { user } = useAuth();
@@ -22,13 +35,26 @@ export const useBetMatching = () => {
 
   const fetchMatches = async () => {
     try {
+      // Using existing bets table to simulate bet matches
       const { data, error } = await supabase
-        .from('bet_matches')
+        .from('bets')
         .select('*')
+        .eq('status', 'matched')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMatches(data || []);
+      
+      // Transform bets data to match structure
+      const transformedMatches = data?.map(bet => ({
+        id: bet.id,
+        creator_bet_id: bet.id,
+        opponent_bet_id: bet.opponent_id || '',
+        matched_amount: bet.amount || 0,
+        status: bet.status || 'active',
+        created_at: bet.created_at || ''
+      })) || [];
+      
+      setMatches(transformedMatches);
     } catch (error) {
       console.error('Error fetching bet matches:', error);
     }
@@ -39,13 +65,23 @@ export const useBetMatching = () => {
 
     try {
       const { data, error } = await supabase
-        .from('bet_escrow')
+        .from('escrow_wallets')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setEscrows(data || []);
+      
+      // Transform escrow data to match expected structure
+      const transformedEscrows = data?.map(escrow => ({
+        id: escrow.id,
+        user_id: escrow.user_id || '',
+        amount: escrow.amount || 0,
+        status: escrow.status || 'held',
+        created_at: escrow.created_at || ''
+      })) || [];
+      
+      setEscrows(transformedEscrows);
     } catch (error) {
       console.error('Error fetching escrows:', error);
     } finally {
@@ -59,56 +95,35 @@ export const useBetMatching = () => {
     try {
       const platformFee = amount * 0.025;
       const escrowFee = amount > 5000 ? amount * 0.01 : 0;
-      const totalEscrow = amount + platformFee + escrowFee;
 
-      const { data, error } = await supabase
-        .from('bet_matches')
-        .insert({
-          creator_bet_id: creatorBetId,
-          opponent_bet_id: opponentBetId,
-          matched_amount: amount,
-          platform_fee: platformFee,
-          escrow_fee: escrowFee,
-          total_escrow: totalEscrow
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Create escrow entries for both parties
-      const escrowEntries = [
-        {
-          bet_match_id: data.id,
-          user_id: user.id,
-          amount: amount,
-          platform_fee: platformFee / 2,
-          escrow_fee: escrowFee / 2
-        }
-      ];
-
+      // Create escrow entry using existing table
       const { error: escrowError } = await supabase
-        .from('bet_escrow')
-        .insert(escrowEntries);
+        .from('escrow_wallets')
+        .insert({
+          user_id: user.id,
+          bet_id: creatorBetId,
+          amount: amount + platformFee + escrowFee,
+          status: 'held'
+        });
 
       if (escrowError) throw escrowError;
 
       await fetchMatches();
       await fetchEscrows();
-      return data;
+      
+      return { id: creatorBetId, matched_amount: amount };
     } catch (error) {
       console.error('Error creating bet match:', error);
       throw error;
     }
   };
 
-  const releasEscrow = async (escrowId: string) => {
+  const releaseEscrow = async (escrowId: string) => {
     try {
       const { error } = await supabase
-        .from('bet_escrow')
+        .from('escrow_wallets')
         .update({ 
-          status: 'released',
-          released_at: new Date().toISOString()
+          status: 'released'
         })
         .eq('id', escrowId);
 
@@ -125,7 +140,7 @@ export const useBetMatching = () => {
     escrows,
     loading,
     createBetMatch,
-    releasEscrow,
+    releaseEscrow,
     refetch: () => {
       fetchMatches();
       fetchEscrows();

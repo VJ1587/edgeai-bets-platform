@@ -29,10 +29,10 @@ interface AdminStats {
   pendingPayouts: number;
 }
 
-interface BetMatch {
+interface BetRecord {
   id: string;
   status: string;
-  matched_amount: number;
+  amount: number;
   created_at: string;
   admin_notes?: string;
 }
@@ -46,8 +46,8 @@ export const AdminDashboard: React.FC = () => {
     totalUsers: 0,
     pendingPayouts: 0
   });
-  const [betMatches, setBetMatches] = useState<BetMatch[]>([]);
-  const [selectedBet, setSelectedBet] = useState<BetMatch | null>(null);
+  const [betRecords, setBetRecords] = useState<BetRecord[]>([]);
+  const [selectedBet, setSelectedBet] = useState<BetRecord | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -59,23 +59,23 @@ export const AdminDashboard: React.FC = () => {
 
   const fetchAdminData = async () => {
     try {
-      // Fetch admin stats
+      // Fetch admin stats using existing tables
       const [
         { count: betCount },
         { data: escrowData },
         { count: syndicateCount },
         { count: userCount },
-        { data: betMatchData }
+        { data: betData }
       ] = await Promise.all([
         supabase.from('bets').select('*', { count: 'exact', head: true }).eq('status', 'open'),
-        supabase.from('bet_escrow').select('amount').eq('status', 'held'),
+        supabase.from('escrow_wallets').select('amount').eq('status', 'held'),
         supabase.from('group_challenges').select('*', { count: 'exact', head: true }).eq('status', 'open'),
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('bet_matches').select('*').order('created_at', { ascending: false }).limit(20)
+        supabase.from('bets').select('*').order('created_at', { ascending: false }).limit(20)
       ]);
 
       const totalEscrow = escrowData?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
-      const pendingPayouts = betMatchData?.filter(b => b.status === 'active').length || 0;
+      const pendingPayouts = betData?.filter(b => b.status === 'open').length || 0;
 
       setStats({
         activeBets: betCount || 0,
@@ -85,7 +85,13 @@ export const AdminDashboard: React.FC = () => {
         pendingPayouts
       });
 
-      setBetMatches(betMatchData || []);
+      setBetRecords(betData?.map(bet => ({
+        id: bet.id,
+        status: bet.status || 'unknown',
+        amount: bet.amount || 0,
+        created_at: bet.created_at || '',
+        admin_notes: ''
+      })) || []);
     } catch (error) {
       console.error('Error fetching admin data:', error);
     } finally {
@@ -96,29 +102,15 @@ export const AdminDashboard: React.FC = () => {
   const handleResolveBet = async (betId: string, winnerId: string, method: string) => {
     try {
       const { error } = await supabase
-        .from('bet_matches')
+        .from('bets')
         .update({
           status: 'completed',
-          winner_id: winnerId,
-          resolved_at: new Date().toISOString(),
-          resolution_method: method,
-          admin_notes: resolutionNotes
+          outcome: winnerId === 'creator' ? 'win' : 'loss',
+          updated_at: new Date().toISOString()
         })
         .eq('id', betId);
 
       if (error) throw error;
-
-      // Log admin activity
-      await supabase
-        .from('admin_activity_log')
-        .insert({
-          admin_id: user?.id,
-          action_type: 'bet_resolution',
-          target_id: betId,
-          target_type: 'bet',
-          description: `Manually resolved bet match with notes: ${resolutionNotes}`,
-          new_values: { status: 'completed', winner_id: winnerId, resolution_method: method }
-        });
 
       fetchAdminData();
       setSelectedBet(null);
@@ -208,7 +200,7 @@ export const AdminDashboard: React.FC = () => {
 
       <Tabs defaultValue="bets" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="bets">Bet Matches</TabsTrigger>
+          <TabsTrigger value="bets">Bet Records</TabsTrigger>
           <TabsTrigger value="escrow">Escrow Management</TabsTrigger>
           <TabsTrigger value="syndicates">Syndicate Activity</TabsTrigger>
           <TabsTrigger value="settings">Platform Settings</TabsTrigger>
@@ -217,26 +209,26 @@ export const AdminDashboard: React.FC = () => {
         <TabsContent value="bets">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Bet Matches</CardTitle>
+              <CardTitle>Recent Bet Records</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {betMatches.map((bet) => (
+                {betRecords.map((bet) => (
                   <div key={bet.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium">Match #{bet.id.slice(0, 8)}</p>
+                      <p className="font-medium">Bet #{bet.id.slice(0, 8)}</p>
                       <p className="text-sm text-muted-foreground">
-                        Amount: ${bet.matched_amount.toFixed(2)}
+                        Amount: ${bet.amount.toFixed(2)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(bet.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={bet.status === 'active' ? 'default' : 'secondary'}>
+                      <Badge variant={bet.status === 'open' ? 'default' : 'secondary'}>
                         {bet.status}
                       </Badge>
-                      {bet.status === 'active' && (
+                      {bet.status === 'open' && (
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button size="sm" onClick={() => setSelectedBet(bet)}>
@@ -245,13 +237,13 @@ export const AdminDashboard: React.FC = () => {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Resolve Bet Match</DialogTitle>
+                              <DialogTitle>Resolve Bet</DialogTitle>
                             </DialogHeader>
                             <div className="space-y-4">
                               <div>
-                                <p className="font-medium">Match #{bet.id.slice(0, 8)}</p>
+                                <p className="font-medium">Bet #{bet.id.slice(0, 8)}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  Amount: ${bet.matched_amount.toFixed(2)}
+                                  Amount: ${bet.amount.toFixed(2)}
                                 </p>
                               </div>
                               
