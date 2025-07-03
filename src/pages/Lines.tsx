@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,28 +13,46 @@ const Lines = () => {
   const [selectedSport, setSelectedSport] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [isRealData, setIsRealData] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  useEffect(() => {
-    loadOdds();
-  }, []);
-
-  const loadOdds = async () => {
-    setLoading(true);
+  const loadOdds = useCallback(async () => {
     try {
+      console.log('Loading odds...');
       const data = await fetchLiveOdds();
       setOdds(data);
+      setLastUpdated(new Date());
       // Check if we got real data (real data won't have 'mock-' prefix in IDs)
       setIsRealData(data.length > 0 && !data[0].id.startsWith('mock-'));
+      console.log(`Loaded ${data.length} games, real data: ${!data[0]?.id.startsWith('mock-')}`);
     } catch (error) {
       console.error('Error loading odds:', error);
       setIsRealData(false);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    const initialLoad = async () => {
+      setLoading(true);
+      await loadOdds();
+      setLoading(false);
+    };
+    initialLoad();
+  }, [loadOdds]);
+
+  // Real-time updates - poll every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('Auto-refreshing odds...');
+      loadOdds();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [loadOdds]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    console.log('Manual refresh triggered');
     await loadOdds();
     setRefreshing(false);
   };
@@ -49,6 +67,16 @@ const Lines = () => {
   const filteredOdds = selectedSport === 'all' 
     ? odds 
     : odds.filter(game => game.sport_title === selectedSport);
+
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return '';
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - lastUpdated.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    return lastUpdated.toLocaleTimeString();
+  };
 
   if (loading) {
     return (
@@ -71,6 +99,11 @@ const Lines = () => {
             <p className="text-muted-foreground">
               {isRealData ? 'Real-time betting odds' : 'Demo odds data'}
             </p>
+            {lastUpdated && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Last updated: {formatLastUpdated()}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Button 
@@ -109,7 +142,7 @@ const Lines = () => {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium text-green-400">
-              {isRealData ? 'Live Odds' : 'Demo Mode'}
+              {isRealData ? 'Live Odds - Auto-updating every 30s' : 'Demo Mode'}
             </span>
             {!isRealData && (
               <Badge variant="outline" className="text-yellow-400 border-yellow-400">
@@ -117,16 +150,23 @@ const Lines = () => {
               </Badge>
             )}
           </div>
-          <Badge variant="outline" className="text-green-400 border-green-400">
-            {filteredOdds.length} Games
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-green-400 border-green-400">
+              {filteredOdds.length} Games
+            </Badge>
+            {refreshing && (
+              <Badge variant="outline" className="text-blue-400 border-blue-400">
+                Updating...
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Odds List */}
         <div className="space-y-4">
           {filteredOdds.map((game) => (
             <OddsCard
-              key={game.id}
+              key={`${game.id}-${lastUpdated?.getTime()}`}
               game={game}
               onBetClick={handleBetClick}
             />
@@ -145,7 +185,7 @@ const Lines = () => {
         <div className="mt-8 p-4 bg-card/50 rounded-lg">
           <p className="text-xs text-muted-foreground text-center">
             Odds are for entertainment purposes. Always gamble responsibly.
-            {isRealData ? ' Lines update every 30 seconds.' : ' Currently showing demo data.'}
+            {isRealData ? ' Lines update automatically every 30 seconds.' : ' Currently showing demo data.'}
           </p>
         </div>
       </div>
