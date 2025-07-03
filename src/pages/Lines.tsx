@@ -12,6 +12,7 @@ const Lines = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [isRealData, setIsRealData] = useState(false);
 
   useEffect(() => {
     loadOdds();
@@ -22,8 +23,11 @@ const Lines = () => {
     try {
       const data = await fetchLiveOdds();
       setOdds(data);
+      // Check if we got real data (real data won't have 'mock-' prefix in IDs)
+      setIsRealData(data.length > 0 && !data[0].id.startsWith('mock-'));
     } catch (error) {
       console.error('Error loading odds:', error);
+      setIsRealData(false);
     } finally {
       setLoading(false);
     }
@@ -64,7 +68,9 @@ const Lines = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Live Lines</h1>
-            <p className="text-muted-foreground">Real-time betting odds</p>
+            <p className="text-muted-foreground">
+              {isRealData ? 'Real-time betting odds' : 'Demo odds data'}
+            </p>
           </div>
           <div className="flex gap-2">
             <Button 
@@ -83,7 +89,7 @@ const Lines = () => {
           </div>
         </div>
 
-        {/* Sports Filter - Show all sports in a scrollable horizontal tabs */}
+        {/* Sports Filter */}
         <Tabs value={selectedSport} onValueChange={setSelectedSport} className="mb-6">
           <TabsList className="w-full overflow-x-auto flex justify-start">
             {sports.map((sport) => (
@@ -102,7 +108,14 @@ const Lines = () => {
         <div className="flex items-center justify-between mb-6 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-sm font-medium text-green-400">Live Odds</span>
+            <span className="text-sm font-medium text-green-400">
+              {isRealData ? 'Live Odds' : 'Demo Mode'}
+            </span>
+            {!isRealData && (
+              <Badge variant="outline" className="text-yellow-400 border-yellow-400">
+                Mock Data
+              </Badge>
+            )}
           </div>
           <Badge variant="outline" className="text-green-400 border-green-400">
             {filteredOdds.length} Games
@@ -132,7 +145,7 @@ const Lines = () => {
         <div className="mt-8 p-4 bg-card/50 rounded-lg">
           <p className="text-xs text-muted-foreground text-center">
             Odds are for entertainment purposes. Always gamble responsibly.
-            Lines update every 30 seconds.
+            {isRealData ? ' Lines update every 30 seconds.' : ' Currently showing demo data.'}
           </p>
         </div>
       </div>

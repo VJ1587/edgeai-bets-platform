@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
@@ -35,28 +36,63 @@ serve(async (req) => {
   try {
     const { sport = 'upcoming' } = await req.json().catch(() => ({}));
     
-    const oddsApiKey = Deno.env.get('ODDS_API_KEY');
+    // Get the API key from Supabase secrets
+    const oddsApiKey = Deno.env.get('ODDS_API_KEY') || Deno.env.get('odds_API');
+    
     if (!oddsApiKey) {
       console.error('ODDS_API_KEY not found in environment variables');
+      console.log('Available env vars:', Object.keys(Deno.env.toObject()));
       return getMockOddsResponse();
     }
 
     const BASE_URL = 'https://api.the-odds-api.com/v4';
-    const url = `${BASE_URL}/sports/${sport}/odds?apiKey=${oddsApiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
+    let url: string;
+    
+    // Handle different sport requests
+    if (sport === 'upcoming') {
+      url = `${BASE_URL}/sports/upcoming/odds?apiKey=${oddsApiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
+    } else {
+      url = `${BASE_URL}/sports/${sport}/odds?apiKey=${oddsApiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
+    }
 
     console.log(`Fetching odds from: ${url.replace(oddsApiKey, '[REDACTED]')}`);
     
     const response = await fetch(url);
     
     if (!response.ok) {
-      console.warn(`Odds API returned ${response.status}, falling back to mock data`);
+      console.warn(`Odds API returned ${response.status}: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
       return getMockOddsResponse();
     }
     
     const data = await response.json();
+    console.log(`Successfully fetched ${data.length} games from Odds API`);
+    
+    // Transform the data to match our expected format
+    const transformedData = data.map((game: any) => ({
+      id: game.id,
+      sport_key: game.sport_key,
+      sport_title: game.sport_title,
+      commence_time: game.commence_time,
+      home_team: game.home_team,
+      away_team: game.away_team,
+      bookmakers: game.bookmakers.map((bookmaker: any) => ({
+        key: bookmaker.key,
+        title: bookmaker.title,
+        markets: bookmaker.markets.map((market: any) => ({
+          key: market.key,
+          outcomes: market.outcomes.map((outcome: any) => ({
+            name: outcome.name,
+            price: outcome.price,
+            point: outcome.point
+          }))
+        }))
+      }))
+    }));
     
     return new Response(
-      JSON.stringify(data || []),
+      JSON.stringify(transformedData),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -71,7 +107,7 @@ serve(async (req) => {
 function getMockOddsResponse(): Response {
   const mockOdds: OddsData[] = [
     {
-      id: '1',
+      id: 'mock-1',
       sport_key: 'basketball_wnba',
       sport_title: 'WNBA',
       commence_time: new Date(Date.now() + 3600000).toISOString(),
@@ -94,12 +130,19 @@ function getMockOddsResponse(): Response {
               { name: 'Las Vegas Aces', price: -110, point: -3.5 },
               { name: 'New York Liberty', price: -110, point: 3.5 }
             ]
+          },
+          {
+            key: 'totals',
+            outcomes: [
+              { name: 'Over', price: -110, point: 165.5 },
+              { name: 'Under', price: -110, point: 165.5 }
+            ]
           }
         ]
       }]
     },
     {
-      id: '2',
+      id: 'mock-2',
       sport_key: 'baseball_mlb',
       sport_title: 'MLB',
       commence_time: new Date(Date.now() + 5400000).toISOString(),
@@ -114,6 +157,20 @@ function getMockOddsResponse(): Response {
             outcomes: [
               { name: 'Los Angeles Dodgers', price: -165 },
               { name: 'San Francisco Giants', price: +140 }
+            ]
+          },
+          {
+            key: 'spreads',
+            outcomes: [
+              { name: 'Los Angeles Dodgers', price: -110, point: -1.5 },
+              { name: 'San Francisco Giants', price: -110, point: 1.5 }
+            ]
+          },
+          {
+            key: 'totals',
+            outcomes: [
+              { name: 'Over', price: -105, point: 9.5 },
+              { name: 'Under', price: -115, point: 9.5 }
             ]
           }
         ]

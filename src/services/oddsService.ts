@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface OddsData {
@@ -24,25 +23,50 @@ export interface OddsData {
 
 export const fetchLiveOdds = async (sport = 'upcoming'): Promise<OddsData[]> => {
   try {
+    console.log(`Fetching odds for sport: ${sport}`);
+    
     const { data, error } = await supabase.functions.invoke('fetch-odds', {
       body: { sport }
     });
     
     if (error) {
-      console.error('Error fetching odds:', error);
+      console.error('Error fetching odds from edge function:', error);
       return getMockOdds();
     }
     
-    return data || [];
+    if (!data || !Array.isArray(data)) {
+      console.warn('Invalid data received from odds API');
+      return getMockOdds();
+    }
+    
+    console.log(`Successfully fetched ${data.length} games`);
+    return data;
   } catch (error) {
-    console.error('Error fetching odds:', error);
+    console.error('Error in fetchLiveOdds:', error);
     return getMockOdds();
+  }
+};
+
+// Function to fetch odds for specific sports
+export const fetchOddsBySport = async (sportKey: string): Promise<OddsData[]> => {
+  return fetchLiveOdds(sportKey);
+};
+
+// Function to get available sports
+export const getAvailableSports = async (): Promise<string[]> => {
+  try {
+    const data = await fetchLiveOdds();
+    const sports = Array.from(new Set(data.map(game => game.sport_title)));
+    return sports;
+  } catch (error) {
+    console.error('Error getting available sports:', error);
+    return ['WNBA', 'MLB', 'UFC', 'Boxing', 'MLS'];
   }
 };
 
 const getMockOdds = (): OddsData[] => [
   {
-    id: '1',
+    id: 'mock-1',
     sport_key: 'basketball_wnba',
     sport_title: 'WNBA',
     commence_time: new Date(Date.now() + 3600000).toISOString(),
@@ -77,7 +101,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '2',
+    id: 'mock-2',
     sport_key: 'baseball_mlb',
     sport_title: 'MLB',
     commence_time: new Date(Date.now() + 5400000).toISOString(),
@@ -112,7 +136,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '3',
+    id: 'mock-3',
     sport_key: 'mma_mixed_martial_arts',
     sport_title: 'UFC',
     commence_time: new Date(Date.now() + 7200000).toISOString(),
@@ -133,7 +157,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '4',
+    id: 'mock-4',
     sport_key: 'baseball_mlb',
     sport_title: 'MLB',
     commence_time: new Date(Date.now() + 10800000).toISOString(),
@@ -168,7 +192,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '5',
+    id: 'mock-5',
     sport_key: 'boxing',
     sport_title: 'Boxing',
     commence_time: new Date(Date.now() + 14400000).toISOString(),
@@ -189,7 +213,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '6',
+    id: 'mock-6',
     sport_key: 'basketball_wnba',
     sport_title: 'WNBA',
     commence_time: new Date(Date.now() + 18000000).toISOString(),
@@ -224,7 +248,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '7',
+    id: 'mock-7',
     sport_key: 'soccer_usa_mls',
     sport_title: 'MLS',
     commence_time: new Date(Date.now() + 21600000).toISOString(),
@@ -253,7 +277,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '8',
+    id: 'mock-8',
     sport_key: 'baseball_mlb',
     sport_title: 'MLB',
     commence_time: new Date(Date.now() + 25200000).toISOString(),
@@ -288,7 +312,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '9',
+    id: 'mock-9',
     sport_key: 'basketball_wnba',
     sport_title: 'WNBA',
     commence_time: new Date(Date.now() + 28800000).toISOString(),
@@ -316,7 +340,7 @@ const getMockOdds = (): OddsData[] => [
     }]
   },
   {
-    id: '10',
+    id: 'mock-10',
     sport_key: 'soccer_usa_mls',
     sport_title: 'MLS',
     commence_time: new Date(Date.now() + 32400000).toISOString(),
