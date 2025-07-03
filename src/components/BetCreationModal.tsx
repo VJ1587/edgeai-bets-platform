@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, AlertCircle, Calculator, DollarSign } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
-import { supabase } from '@/integrations/supabase/client';
+import { useBetPlacement } from '@/hooks/useBetPlacement';
 import { OddsData } from '@/services/oddsService';
 
 interface BetCreationModalProps {
@@ -23,102 +23,49 @@ interface BetCreationModalProps {
 export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market, outcome }) => {
   const { user } = useAuth();
   const { wallet } = useWallet();
+  const { placeBet, loading } = useBetPlacement();
   const [open, setOpen] = useState(false);
   const [betType, setBetType] = useState<'1v1' | 'syndicate'>('1v1');
   const [amount, setAmount] = useState('');
   const [vigPercent, setVigPercent] = useState('10');
   const [expiryHours, setExpiryHours] = useState('24');
   const [description, setDescription] = useState('');
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
 
   const betAmount = parseFloat(amount) || 0;
   const vig = parseFloat(vigPercent) || 0;
   const platformFee = betAmount * 0.025; // 2.5%
   const escrowFee = betAmount > 5000 ? betAmount * 0.01 : 0; // 1% for bets > $5000
-  const totalFees = platformFee + escrowFee;
-  const netPayout = betAmount - totalFees;
+  const totalCost = betAmount + platformFee + escrowFee;
 
   const handleCreateBet = async () => {
     if (!user || !wallet) return;
     
     if (betAmount <= 0) {
-      setError('Bet amount must be greater than $0');
       return;
     }
 
     if (betAmount > (wallet.balance || 0)) {
-      setError('Insufficient wallet balance');
       return;
     }
 
-    if (betAmount > 50000) {
-      setError('Maximum bet amount is $50,000');
-      return;
-    }
+    const selection = outcome ? `${outcome.name} ${outcome.price}` : description;
+    const odds = outcome?.price?.toString() || '100';
 
-    setProcessing(true);
-    setError('');
+    const result = await placeBet({
+      gameId: game?.id || 'custom',
+      betType: market || 'straight',
+      selection,
+      amount: betAmount,
+      odds,
+      vigPercent: vig,
+      expiryHours: parseInt(expiryHours),
+      description
+    });
 
-    try {
-      const expiryTime = new Date();
-      expiryTime.setHours(expiryTime.getHours() + parseInt(expiryHours));
-
-      if (betType === '1v1') {
-        // Create 1v1 bet
-        const { error: betError } = await supabase
-          .from('bets')
-          .insert({
-            creator_id: user.id,
-            bet_type: market || 'straight',
-            bet_selection: outcome ? `${outcome.name} ${outcome.price}` : description,
-            amount: betAmount,
-            odds: outcome?.price?.toString() || '100',
-            event_id: game?.id || 'custom',
-            vig_percent: vig,
-            expiry_time: expiryTime.toISOString(),
-            status: 'open'
-          });
-
-        if (betError) throw betError;
-
-        // Update wallet balance (hold funds in escrow)
-        const { error: walletError } = await supabase
-          .from('user_wallets')
-          .update({ 
-            balance: (wallet.balance || 0) - betAmount,
-            escrow_held: (wallet.escrow_held || 0) + betAmount
-          })
-          .eq('user_id', user.id);
-
-        if (walletError) throw walletError;
-      } else {
-        // Create syndicate challenge
-        const { error: challengeError } = await supabase
-          .from('group_challenges')
-          .insert({
-            creator_id: user.id,
-            title: `${game?.away_team} vs ${game?.home_team} - ${market}`,
-            description: description || `${outcome?.name} at ${outcome?.price}`,
-            event_id: game?.id || 'custom',
-            bet_type: market || 'straight',
-            target_amount: betAmount,
-            entry_fee: Math.max(10, betAmount * 0.1), // 10% entry fee, min $10
-            vig_percent: vig,
-            expiry_time: expiryTime.toISOString()
-          });
-
-        if (challengeError) throw challengeError;
-      }
-
+    if (result) {
       setOpen(false);
       setAmount('');
       setDescription('');
-      window.location.reload(); // Refresh to show new bet
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create bet');
-    } finally {
-      setProcessing(false);
     }
   };
 
@@ -165,9 +112,7 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
           </div>
 
           <div>
-            <Label htmlFor="amount">
-              {betType === '1v1' ? 'Bet Amount' : 'Target Pool Size'}
-            </Label>
+            <Label htmlFor="amount">Bet Amount</Label>
             <Input
               id="amount"
               type="number"
@@ -226,7 +171,7 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
             <div className="p-3 bg-blue-50 rounded-lg space-y-2">
               <div className="flex items-center gap-2">
                 <Calculator className="h-4 w-4" />
-                <span className="font-medium">Fee Breakdown</span>
+                <span className="font-medium">Cost Breakdown</span>
               </div>
               <div className="text-sm space-y-1">
                 <div className="flex justify-between">
@@ -244,8 +189,12 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
                   </div>
                 )}
                 <div className="flex justify-between font-medium border-t pt-1">
-                  <span>Net Payout:</span>
-                  <span>${netPayout.toFixed(2)}</span>
+                  <span>Total Cost:</span>
+                  <span>${totalCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Your Balance:</span>
+                  <span>${(wallet?.balance || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -260,21 +209,23 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
             </Alert>
           )}
 
-          {error && (
+          {totalCost > (wallet?.balance || 0) && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                Insufficient balance. You need ${totalCost.toFixed(2)} but only have ${(wallet?.balance || 0).toFixed(2)}.
+              </AlertDescription>
             </Alert>
           )}
 
           <div className="flex gap-2">
             <Button
               onClick={handleCreateBet}
-              disabled={processing || !amount || (!game && !description)}
+              disabled={loading || !amount || (!game && !description) || totalCost > (wallet?.balance || 0)}
               className="flex-1"
             >
               <DollarSign className="h-4 w-4 mr-2" />
-              {processing ? 'Creating...' : `Create ${betType === '1v1' ? '1v1' : 'Syndicate'} Bet`}
+              {loading ? 'Creating...' : `Place $${betAmount.toFixed(2)} Bet`}
             </Button>
             <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel

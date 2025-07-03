@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { ResultsGenerator } from './ResultsGenerator';
 
 interface AdminStats {
   activeBets: number;
@@ -201,6 +201,7 @@ export const AdminDashboard: React.FC = () => {
       <Tabs defaultValue="bets" className="space-y-4">
         <TabsList>
           <TabsTrigger value="bets">Bet Records</TabsTrigger>
+          <TabsTrigger value="results">Results Generator</TabsTrigger>
           <TabsTrigger value="escrow">Escrow Management</TabsTrigger>
           <TabsTrigger value="syndicates">Syndicate Activity</TabsTrigger>
           <TabsTrigger value="settings">Platform Settings</TabsTrigger>
@@ -282,6 +283,10 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="results">
+          <ResultsGenerator />
         </TabsContent>
 
         <TabsContent value="escrow">
