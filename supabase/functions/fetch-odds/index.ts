@@ -4,6 +4,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE',
 }
 
 interface OddsData {
@@ -30,18 +31,34 @@ interface OddsData {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 200 
+    });
   }
 
   try {
-    const { sport = 'upcoming' } = await req.json().catch(() => ({}));
+    console.log('🔍 Fetch-odds function called');
+    
+    // Parse request body safely
+    let requestBody = {};
+    try {
+      const text = await req.text();
+      if (text) {
+        requestBody = JSON.parse(text);
+      }
+    } catch (parseError) {
+      console.log('No JSON body provided, using defaults');
+    }
+    
+    const { sport = 'upcoming' } = requestBody as { sport?: string };
+    console.log(`📊 Requested sport: ${sport}`);
     
     // Get the API key from Supabase secrets
     const oddsApiKey = Deno.env.get('ODDS_API_KEY') || Deno.env.get('odds_API');
     
     if (!oddsApiKey) {
-      console.error('ODDS_API_KEY not found in environment variables');
-      console.log('Available env vars:', Object.keys(Deno.env.toObject()));
+      console.warn('⚠️ ODDS_API_KEY not found, returning mock data');
       return getMockOddsResponse();
     }
 
@@ -55,19 +72,24 @@ serve(async (req) => {
       url = `${BASE_URL}/sports/${sport}/odds?apiKey=${oddsApiKey}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&dateFormat=iso`;
     }
 
-    console.log(`Fetching odds from: ${url.replace(oddsApiKey, '[REDACTED]')}`);
+    console.log(`🌐 Fetching from API: ${url.replace(oddsApiKey, '[REDACTED]')}`);
     
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Lovable-Sports-App/1.0'
+      }
+    });
     
     if (!response.ok) {
-      console.warn(`Odds API returned ${response.status}: ${response.statusText}`);
+      console.warn(`⚠️ Odds API returned ${response.status}: ${response.statusText}`);
       const errorText = await response.text();
-      console.error('API Error:', errorText);
+      console.error('API Error details:', errorText);
       return getMockOddsResponse();
     }
     
     const data = await response.json();
-    console.log(`Successfully fetched ${data.length} games from Odds API`);
+    console.log(`✅ Successfully fetched ${data.length} games from real API`);
     
     // Transform the data to match our expected format
     const transformedData = data.map((game: any) => ({
@@ -94,17 +116,22 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(transformedData),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
         status: 200,
       }
     );
   } catch (error) {
-    console.error('Error fetching odds:', error);
+    console.error('❌ Error in fetch-odds function:', error);
     return getMockOddsResponse();
   }
 });
 
 function getMockOddsResponse(): Response {
+  console.log('📦 Returning mock odds data');
+  
   const mockOdds: OddsData[] = [
     {
       id: 'mock-1',
@@ -181,7 +208,10 @@ function getMockOddsResponse(): Response {
   return new Response(
     JSON.stringify(mockOdds),
     {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json' 
+      },
       status: 200,
     }
   );

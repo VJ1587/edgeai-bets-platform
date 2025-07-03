@@ -18,11 +18,11 @@ const Lines = () => {
 
   const loadOdds = useCallback(async () => {
     try {
-      console.log('🔄 Starting to load odds...');
+      console.log('🔄 Loading odds...');
       setError(null);
       
       const data = await fetchLiveOdds();
-      console.log('📊 Raw data received:', data);
+      console.log(`📊 Received ${data.length} games`);
       
       if (!data || !Array.isArray(data)) {
         throw new Error('Invalid data format received');
@@ -35,9 +35,7 @@ const Lines = () => {
       const isReal = data.length > 0 && !data[0].id.startsWith('mock-');
       setIsRealData(isReal);
       
-      console.log(`✅ Successfully loaded ${data.length} games`);
-      console.log(`📡 Data type: ${isReal ? 'REAL' : 'MOCK'}`);
-      console.log('🎯 First game ID:', data[0]?.id);
+      console.log(`✅ Successfully loaded ${data.length} games (${isReal ? 'REAL' : 'MOCK'} data)`);
       
     } catch (error) {
       console.error('❌ Error loading odds:', error);
@@ -86,13 +84,10 @@ const Lines = () => {
   };
 
   const sports = ['all', ...Array.from(new Set(odds.map(game => game.sport_title)))];
-  console.log('🏈 Available sports:', sports);
   
   const filteredOdds = selectedSport === 'all' 
     ? odds 
     : odds.filter(game => game.sport_title === selectedSport);
-  
-  console.log(`🎯 Filtered odds count: ${filteredOdds.length} (selected sport: ${selectedSport})`);
 
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
@@ -161,7 +156,6 @@ const Lines = () => {
                 key={sport} 
                 value={sport} 
                 className="text-xs whitespace-nowrap px-4"
-                onClick={() => console.log('🏷️ Sport filter changed to:', sport)}
               >
                 {sport === 'all' ? 'All Sports' : sport}
               </TabsTrigger>
@@ -194,12 +188,6 @@ const Lines = () => {
           </div>
         </div>
 
-        {/* Debug Info */}
-        <div className="mb-4 p-2 bg-gray-800/50 rounded text-xs text-gray-400">
-          <p>🔍 Debug: Total odds: {odds.length} | Filtered: {filteredOdds.length} | Sport: {selectedSport}</p>
-          <p>📊 Data source: {isRealData ? 'Real API' : 'Mock data'} | Last update: {lastUpdated?.toLocaleTimeString() || 'Never'}</p>
-        </div>
-
         {/* Odds List */}
         <div className="space-y-4">
           {filteredOdds.map((game) => (
@@ -215,9 +203,6 @@ const Lines = () => {
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               No live odds available for {selectedSport === 'all' ? 'any sport' : selectedSport}
-            </p>
-            <p className="text-xs text-gray-400 mt-2">
-              Total odds in state: {odds.length}
             </p>
           </div>
         )}
