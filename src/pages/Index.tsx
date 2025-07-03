@@ -17,8 +17,9 @@ const Index = () => {
     );
   }
 
-  // Redirect based on authentication status
-  return <Navigate to={user ? "/" : "/landing"} replace />;
+  // Redirect authenticated users to home (which will show dashboard sections)
+  // Redirect unauthenticated users to landing
+  return <Navigate to={user ? "/home" : "/landing"} replace />;
 };
 
 export default Index;

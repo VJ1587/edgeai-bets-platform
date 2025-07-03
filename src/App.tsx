@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -34,89 +33,28 @@ function App() {
                 <Route path="/landing" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/success" element={<Success />} />
+                <Route path="*" element={<NotFound />} />
                 
+                {/* All protected routes now use Layout which includes dashboard sections */}
                 <Route 
                   path="/" 
                   element={
                     <ProtectedRoute>
-                      <Home />
+                      <Layout />
                     </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/picks" 
-                  element={
-                    <ProtectedRoute>
-                      <Picks />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/lines" 
-                  element={
-                    <ProtectedRoute>
-                      <Lines />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/challenges" 
-                  element={
-                    <ProtectedRoute>
-                      <Challenges />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/plans" 
-                  element={
-                    <ProtectedRoute>
-                      <Plans />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/profile" 
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/bookie-dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <BookieDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/bookie-licensing" 
-                  element={
-                    <ProtectedRoute>
-                      <BookieLicensing />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route path="*" element={<NotFound />} />
+                  }
+                >
+                  <Route index element={<Home />} />
+                  <Route path="home" element={<Home />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="picks" element={<Picks />} />
+                  <Route path="lines" element={<Lines />} />
+                  <Route path="challenges" element={<Challenges />} />
+                  <Route path="plans" element={<Plans />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="bookie-dashboard" element={<BookieDashboard />} />
+                  <Route path="bookie-licensing" element={<BookieLicensing />} />
+                </Route>
               </Routes>
               <Toaster />
             </div>
