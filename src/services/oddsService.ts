@@ -1,4 +1,3 @@
-import { supabase } from '@/integrations/supabase/client';
 
 export interface OddsData {
   id: string;
@@ -22,32 +21,10 @@ export interface OddsData {
 }
 
 export const fetchLiveOdds = async (sport = 'upcoming'): Promise<OddsData[]> => {
-  try {
-    console.log(`🔄 Calling Supabase function with sport: ${sport}`);
-    
-    const { data, error } = await supabase.functions.invoke('fetch-odds', {
-      body: { sport }
-    });
-    
-    if (error) {
-      console.error('❌ Supabase function error:', error);
-      console.log('🔄 Falling back to mock data due to function error');
-      return getMockOdds();
-    }
-    
-    if (!data || !Array.isArray(data)) {
-      console.warn('⚠️ Invalid data received from function:', data);
-      console.log('🔄 Falling back to mock data due to invalid response');
-      return getMockOdds();
-    }
-    
-    console.log(`✅ Successfully received ${data.length} games from function`);
-    return data;
-  } catch (error) {
-    console.error('❌ Error in fetchLiveOdds:', error);
-    console.log('🔄 Falling back to mock data due to fetch error');
-    return getMockOdds();
-  }
+  console.log(`🔄 Using demo data for sport: ${sport}`);
+  
+  // Always return mock data for now
+  return getMockOdds();
 };
 
 // Function to fetch odds for specific sports
