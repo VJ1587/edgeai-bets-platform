@@ -25,28 +25,21 @@ export const ComplianceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const { user } = useAuth();
   const { hasValidConsent, logUserEvent, loading } = useCompliance();
   const [showConsent, setShowConsent] = useState(false);
+  
+  // DEMO MODE: Temporarily disable compliance requirements
   const [needsConsent, setNeedsConsent] = useState(false);
-  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(true);
 
   useEffect(() => {
     if (user && !loading && !consentChecked) {
-      // Check if user needs to give consent
-      const hasTerms = hasValidConsent('terms');
-      const hasPrivacy = hasValidConsent('privacy');
-      const hasGdpr = hasValidConsent('gdpr');
-      
-      const needsConsentCheck = !hasTerms || !hasPrivacy || !hasGdpr;
-      setNeedsConsent(needsConsentCheck);
+      // DEMO MODE: Skip consent checking for demo
+      setNeedsConsent(false);
       setConsentChecked(true);
       
-      if (needsConsentCheck) {
-        setShowConsent(true);
-      } else {
-        // Log login event for users who already have consent
-        logUserEvent('login', { timestamp: new Date().toISOString() });
-      }
+      // Log login event for demo
+      logUserEvent('login', { timestamp: new Date().toISOString() });
     }
-  }, [user, loading, hasValidConsent, logUserEvent, consentChecked]);
+  }, [user, loading, logUserEvent, consentChecked]);
 
   const handleConsentGiven = () => {
     setNeedsConsent(false);
@@ -60,8 +53,8 @@ export const ComplianceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const value = {
-    needsConsent,
-    hasValidConsent,
+    needsConsent: false, // DEMO MODE: Always return false
+    hasValidConsent: () => true, // DEMO MODE: Always return true
     logUserEvent,
     showConsentModal
   };
@@ -69,11 +62,14 @@ export const ComplianceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <ComplianceContext.Provider value={value}>
       {children}
-      <ConsentModal
-        isOpen={showConsent}
-        onClose={() => {}} // Prevent manual closing
-        onConsentGiven={handleConsentGiven}
-      />
+      {/* DEMO MODE: Hide consent modal */}
+      {false && (
+        <ConsentModal
+          isOpen={showConsent}
+          onClose={() => {}} // Prevent manual closing
+          onConsentGiven={handleConsentGiven}
+        />
+      )}
     </ComplianceContext.Provider>
   );
 };
