@@ -220,7 +220,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="bg-slate-900 py-8 px-4">
         <div className="text-center text-gray-400">
-          <p>&copy; 2024 EdgeStake.ai - Smart Sports Betting Platform</p>
+          <p>&copy; 2025 EdgeStake.ai - Smart Sports Betting Platform</p>
           <p className="mt-2 text-sm">Licensed and regulated for responsible gaming</p>
         </div>
       </footer>
