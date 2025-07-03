@@ -66,17 +66,17 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
 
       <Tabs defaultValue="games" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-1 gap-1">
-          <TabsTrigger value="games" className="text-xs sm:text-sm py-3 px-2">Live Games</TabsTrigger>
-          <TabsTrigger value="1v1" className="text-xs sm:text-sm py-3 px-2">My 1v1 Bets</TabsTrigger>
-          <TabsTrigger value="syndicates" className="text-xs sm:text-sm py-3 px-2">Available Syndicates</TabsTrigger>
-          <TabsTrigger value="history" className="text-xs sm:text-sm py-3 px-2">Bet History</TabsTrigger>
+          <TabsTrigger value="games" className="text-xs sm:text-sm py-3 px-2 min-h-[60px]">Live Games</TabsTrigger>
+          <TabsTrigger value="1v1" className="text-xs sm:text-sm py-3 px-2 min-h-[60px]">My 1v1 Bets</TabsTrigger>
+          <TabsTrigger value="syndicates" className="text-xs sm:text-sm py-3 px-2 min-h-[60px]">Available Syndicates</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs sm:text-sm py-3 px-2 min-h-[60px]">Bet History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="games">
           <div className="grid gap-6">
             {games.slice(0, 6).map((game) => (
               <Card key={game.id} className="relative overflow-hidden">
-                <CardContent className="p-6">
+                <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
                     <Badge variant="outline" className="text-sm px-3 py-1">
                       {game.sport_title}
@@ -96,7 +96,7 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
                   {game.bookmakers?.[0]?.markets?.find(m => m.key === 'h2h') && (
                     <div className="space-y-4">
                       <p className="text-sm font-medium text-muted-foreground text-center">Moneyline</p>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {game.bookmakers[0].markets.find(m => m.key === 'h2h')?.outcomes.slice(0, 2).map((outcome, index) => (
                           <div key={index} className="text-center p-4 border rounded-lg bg-card/30 hover:bg-card/50 transition-colors">
                             <p className="text-sm font-medium mb-2 truncate">{outcome.name.split(' ').pop()}</p>
@@ -132,7 +132,7 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
             ) : (
               bets.map((bet) => (
                 <Card key={bet.id}>
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="space-y-2">
                         <p className="font-medium text-lg">{bet.bet_selection}</p>
@@ -163,13 +163,13 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
             ) : (
               challenges.map((challenge) => (
                 <Card key={challenge.id}>
-                  <CardContent className="p-6">
+                  <CardContent className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                       <h3 className="font-medium text-lg">{challenge.title}</h3>
                       <Badge variant="outline" className="w-fit">{challenge.bet_type}</Badge>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                       <div className="text-center p-4 bg-card/30 rounded-lg">
                         <p className="text-sm text-muted-foreground mb-1">Target</p>
                         <p className="font-bold text-xl text-primary">${challenge.target_amount.toFixed(2)}</p>
@@ -194,7 +194,7 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
                       <span className="text-sm text-muted-foreground">
                         Expires: {new Date(challenge.expiry_time).toLocaleDateString()}
                       </span>
-                      <Button size="lg" className="w-full sm:w-auto">
+                      <Button size="lg" className="w-full sm:w-auto min-h-[48px]">
                         <Users className="h-4 w-4 mr-2" />
                         Join Syndicate
                       </Button>
@@ -208,13 +208,13 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
 
         <TabsContent value="history">
           <Card>
-            <CardHeader className="p-6">
+            <CardHeader className="p-4 sm:p-6">
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
                 Betting History
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <p className="text-muted-foreground">
                 Your completed bets and payouts will appear here.
               </p>
@@ -227,8 +227,8 @@ export const SmartBetInterface: React.FC<SmartBetInterfaceProps> = ({ games }) =
         <Alert className="mt-6">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="text-sm">
-            Large wagers (>$5,000) are subject to validation delays. 
-            Platform fee: 2.5% | Escrow fee: 1% (on bets >$5,000)
+            Large wagers (&gt;$5,000) are subject to validation delays. 
+            Platform fee: 2.5% | Escrow fee: 1% (on bets &gt;$5,000)
           </AlertDescription>
         </Alert>
       )}
