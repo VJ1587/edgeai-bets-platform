@@ -51,62 +51,76 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen gradient-bg">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <div className="mb-4 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">EdgeStake Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-center sm:text-left">
+            EdgeStake Dashboard
+          </h1>
+          <p className="text-sm sm:text-base text-muted-foreground text-center sm:text-left">
             Welcome back, {user.email}
           </p>
         </div>
 
-        <Tabs defaultValue="betting" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto p-1">
-            <TabsTrigger value="betting" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+        <Tabs defaultValue="betting" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto p-2 gap-1 bg-card/50">
+            <TabsTrigger 
+              value="betting" 
+              className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
+            >
+              <TrendingUp className="h-5 w-5" />
               <span>Betting</span>
             </TabsTrigger>
-            <TabsTrigger value="wallet" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-              <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsTrigger 
+              value="wallet" 
+              className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
+            >
+              <Wallet className="h-5 w-5" />
               <span>Wallet</span>
             </TabsTrigger>
-            <TabsTrigger value="syndicates" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-              <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+            <TabsTrigger 
+              value="syndicates" 
+              className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
+            >
+              <Users className="h-5 w-5" />
               <span>Syndicates</span>
             </TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="admin" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+              <TabsTrigger 
+                value="admin" 
+                className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
+              >
+                <Shield className="h-5 w-5" />
                 <span>Admin</span>
               </TabsTrigger>
             )}
           </TabsList>
 
-          <TabsContent value="betting" className="mt-4 sm:mt-6">
+          <TabsContent value="betting" className="mt-6 space-y-0">
             {gamesLoading ? (
-              <div className="flex items-center justify-center p-6 sm:p-8">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="flex items-center justify-center p-8">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <SmartBetInterface games={games} />
             )}
           </TabsContent>
 
-          <TabsContent value="wallet" className="mt-4 sm:mt-6">
-            <div className="max-w-full sm:max-w-2xl">
+          <TabsContent value="wallet" className="mt-6">
+            <div className="max-w-full">
               <WalletOnboarding />
             </div>
           </TabsContent>
 
-          <TabsContent value="syndicates" className="mt-4 sm:mt-6">
+          <TabsContent value="syndicates" className="mt-6">
             <Card>
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Users className="h-5 w-5" />
                   Syndicate Management
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
-                <p className="text-sm sm:text-base text-muted-foreground mb-4">
+                <p className="text-sm sm:text-base text-muted-foreground mb-6">
                   Join syndicate challenges or create your own pooled betting opportunities.
                 </p>
                 <SmartBetInterface games={games} />
@@ -115,7 +129,7 @@ const Dashboard = () => {
           </TabsContent>
 
           {isAdmin && (
-            <TabsContent value="admin" className="mt-4 sm:mt-6">
+            <TabsContent value="admin" className="mt-6">
               <AdminDashboard />
             </TabsContent>
           )}

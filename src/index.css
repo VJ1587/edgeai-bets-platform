@@ -61,12 +61,12 @@
   /* Improved mobile text legibility */
   @media (max-width: 768px) {
     body {
-      font-size: 14px;
-      line-height: 1.5;
+      font-size: 16px; /* Increased from 14px for better mobile readability */
+      line-height: 1.6;
     }
     
     h1, h2, h3, h4, h5, h6 {
-      line-height: 1.3;
+      line-height: 1.4;
     }
   }
 }
@@ -96,20 +96,49 @@
     padding-right: 1rem;
   }
   
-  /* Better touch targets on mobile */
+  /* Better touch targets on mobile - increased minimum size */
   button, a, [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 48px; /* Increased from 44px */
+    min-width: 48px;
   }
   
   /* Improved mobile card spacing */
   .card {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem; /* Increased spacing */
   }
   
   /* Better mobile form inputs */
   input, textarea, select {
     font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 48px; /* Better touch targets */
+  }
+  
+  /* Mobile tab improvements */
+  [data-state="active"] {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  /* Improved mobile spacing for interactive elements */
+  .mobile-spacing > * {
+    margin-bottom: 1rem;
+  }
+  
+  /* Better mobile button spacing */
+  .mobile-buttons {
+    gap: 1rem;
+  }
+  
+  /* Mobile grid improvements */
+  .mobile-grid-fix {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-grid-fix {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
 }
 
@@ -122,4 +151,25 @@ html {
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+}
+
+/* Enhanced mobile touch interactions */
+@media (max-width: 768px) {
+  /* Larger tap targets for tabs */
+  [role="tab"] {
+    padding: 1rem !important;
+    min-height: 60px;
+  }
+  
+  /* Better spacing for cards */
+  .card-content-mobile {
+    padding: 1.5rem;
+  }
+  
+  /* Improved button sizing */
+  .btn-mobile {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    min-height: 48px;
+  }
 }
