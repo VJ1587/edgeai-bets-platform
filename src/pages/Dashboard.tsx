@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,16 +7,33 @@ import { WalletOnboarding } from '@/components/WalletOnboarding';
 import { SmartBetInterface } from '@/components/SmartBetInterface';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { useWallet } from '@/hooks/useWallet';
-import { useMatchOdds } from '@/hooks/useMatchOdds';
+import { fetchLiveOdds, OddsData } from '@/services/oddsService';
 import { Shield, TrendingUp, Users, Wallet } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { wallet, loading: walletLoading } = useWallet();
-  const { odds: games, loading: gamesLoading } = useMatchOdds();
+  const [games, setGames] = useState<OddsData[]>([]);
+  const [gamesLoading, setGamesLoading] = useState(true);
 
   // Check if user is admin (simplified check - in production would check profiles table)
   const isAdmin = user?.email === 'vimj1915@gmail.com' || user?.email?.includes('@edgestake.ai');
+
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        setGamesLoading(true);
+        const oddsData = await fetchLiveOdds();
+        setGames(oddsData);
+      } catch (error) {
+        console.error('Error loading games:', error);
+      } finally {
+        setGamesLoading(false);
+      }
+    };
+
+    loadGames();
+  }, []);
 
   if (!user) {
     return (
