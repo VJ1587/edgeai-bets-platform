@@ -14,18 +14,34 @@ const Lines = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [isRealData, setIsRealData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const loadOdds = useCallback(async () => {
     try {
-      console.log('Loading odds...');
+      console.log('🔄 Starting to load odds...');
+      setError(null);
+      
       const data = await fetchLiveOdds();
+      console.log('📊 Raw data received:', data);
+      
+      if (!data || !Array.isArray(data)) {
+        throw new Error('Invalid data format received');
+      }
+      
       setOdds(data);
       setLastUpdated(new Date());
+      
       // Check if we got real data (real data won't have 'mock-' prefix in IDs)
-      setIsRealData(data.length > 0 && !data[0].id.startsWith('mock-'));
-      console.log(`Loaded ${data.length} games, real data: ${!data[0]?.id.startsWith('mock-')}`);
+      const isReal = data.length > 0 && !data[0].id.startsWith('mock-');
+      setIsRealData(isReal);
+      
+      console.log(`✅ Successfully loaded ${data.length} games`);
+      console.log(`📡 Data type: ${isReal ? 'REAL' : 'MOCK'}`);
+      console.log('🎯 First game ID:', data[0]?.id);
+      
     } catch (error) {
-      console.error('Error loading odds:', error);
+      console.error('❌ Error loading odds:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load odds');
       setIsRealData(false);
     }
   }, []);
@@ -33,40 +49,50 @@ const Lines = () => {
   // Initial load
   useEffect(() => {
     const initialLoad = async () => {
+      console.log('🚀 Initial load starting...');
       setLoading(true);
       await loadOdds();
       setLoading(false);
+      console.log('🏁 Initial load completed');
     };
     initialLoad();
   }, [loadOdds]);
 
   // Real-time updates - poll every 30 seconds
   useEffect(() => {
+    console.log('⏰ Setting up auto-refresh interval...');
     const interval = setInterval(() => {
-      console.log('Auto-refreshing odds...');
+      console.log('🔄 Auto-refresh triggered');
       loadOdds();
     }, 30000); // 30 seconds
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('🛑 Clearing auto-refresh interval');
+      clearInterval(interval);
+    };
   }, [loadOdds]);
 
   const handleRefresh = async () => {
+    console.log('👆 Manual refresh button clicked');
     setRefreshing(true);
-    console.log('Manual refresh triggered');
     await loadOdds();
     setRefreshing(false);
+    console.log('✅ Manual refresh completed');
   };
 
   const handleBetClick = (game: OddsData, market: string, outcome: any) => {
-    console.log('Bet clicked:', { game: game.id, market, outcome });
+    console.log('🎲 Bet clicked:', { game: game.id, market, outcome });
     // This will be connected to betting logic in Phase 3
   };
 
   const sports = ['all', ...Array.from(new Set(odds.map(game => game.sport_title)))];
+  console.log('🏈 Available sports:', sports);
   
   const filteredOdds = selectedSport === 'all' 
     ? odds 
     : odds.filter(game => game.sport_title === selectedSport);
+  
+  console.log(`🎯 Filtered odds count: ${filteredOdds.length} (selected sport: ${selectedSport})`);
 
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
@@ -104,6 +130,11 @@ const Lines = () => {
                 Last updated: {formatLastUpdated()}
               </p>
             )}
+            {error && (
+              <p className="text-xs text-red-400 mt-1">
+                Error: {error}
+              </p>
+            )}
           </div>
           <div className="flex gap-2">
             <Button 
@@ -113,7 +144,7 @@ const Lines = () => {
               disabled={refreshing}
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
+              {refreshing ? 'Refreshing...' : 'Refresh'}
             </Button>
             <Button variant="outline" size="sm">
               <Filter className="h-4 w-4 mr-2" />
@@ -130,6 +161,7 @@ const Lines = () => {
                 key={sport} 
                 value={sport} 
                 className="text-xs whitespace-nowrap px-4"
+                onClick={() => console.log('🏷️ Sport filter changed to:', sport)}
               >
                 {sport === 'all' ? 'All Sports' : sport}
               </TabsTrigger>
@@ -162,6 +194,12 @@ const Lines = () => {
           </div>
         </div>
 
+        {/* Debug Info */}
+        <div className="mb-4 p-2 bg-gray-800/50 rounded text-xs text-gray-400">
+          <p>🔍 Debug: Total odds: {odds.length} | Filtered: {filteredOdds.length} | Sport: {selectedSport}</p>
+          <p>📊 Data source: {isRealData ? 'Real API' : 'Mock data'} | Last update: {lastUpdated?.toLocaleTimeString() || 'Never'}</p>
+        </div>
+
         {/* Odds List */}
         <div className="space-y-4">
           {filteredOdds.map((game) => (
@@ -177,6 +215,9 @@ const Lines = () => {
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               No live odds available for {selectedSport === 'all' ? 'any sport' : selectedSport}
+            </p>
+            <p className="text-xs text-gray-400 mt-2">
+              Total odds in state: {odds.length}
             </p>
           </div>
         )}
