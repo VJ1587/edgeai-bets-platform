@@ -1,287 +1,238 @@
+
 import React, { useState } from 'react';
-import { BookieTierCard } from '@/components/BookieTierCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Users, DollarSign, TrendingUp, Building, Info } from 'lucide-react';
+import { BookieTierCard } from '@/components/BookieTierCard';
+import { useAuth } from '@/contexts/AuthContext';
 import { useBookieOperator } from '@/hooks/useBookieOperator';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const BookieLicensing = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const { operator, loading, applyForLicense } = useBookieOperator();
-  const { toast } = useToast();
-  const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [selectedTier, setSelectedTier] = useState<'starter' | 'pro' | 'elite'>('starter');
   const [businessName, setBusinessName] = useState('');
-  const [applying, setApplying] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
-  const tiers = [
-    {
-      id: 'starter' as const,
-      name: 'Starter',
-      price: 97,
-      maxParticipants: 10,
+  const tiers = {
+    starter: {
+      monthlyFee: 249,
+      dailyCap: '$5,000',
       features: [
-        'Custom lines and odds creation',
-        'Up to 10 syndicated participants',
-        'Basic analytics dashboard',
-        'Email support',
-        'Standard escrow protection',
-        '2.5% platform fee',
-        '1% escrow fee (>$5K bets)'
-      ],
-      current: operator?.tier === 'starter'
+        'Basic betting lines',
+        'Up to $5K daily volume',
+        'Standard support',
+        'Basic analytics',
+        'Mobile-optimized interface'
+      ]
     },
-    {
-      id: 'pro' as const,
-      name: 'Pro',
-      price: 297,
-      maxParticipants: 50,
+    pro: {
+      monthlyFee: 499,
+      dailyCap: '$25,000',
       features: [
-        'Everything in Starter',
-        'Unlimited syndicated participants',
-        'Private client dashboards',
-        'Advanced risk analytics',
+        'Advanced betting lines',
+        'Up to $25K daily volume',
+        'Limited line controls',
+        'Enhanced analytics',
         'Priority support',
-        'Custom branding options',
-        'API access for integrations',
-        'Enhanced liquidity tools'
-      ],
-      popular: true,
-      current: operator?.tier === 'pro'
+        'Risk management tools'
+      ]
     },
-    {
-      id: 'elite' as const,
-      name: 'Elite',
-      price: 997,
-      maxParticipants: 200,
+    elite: {
+      monthlyFee: 999,
+      dailyCap: '$100,000',
       features: [
-        'Everything in Pro',
-        'Multi-agent team management',
-        'White-label platform skin',
-        'Dedicated account manager',
-        'Custom credit line arrangements',
-        'Real-time settlement tools',
-        'Advanced fraud protection',
-        'Institutional-grade compliance',
-        '24/7 phone support'
-      ],
-      current: operator?.tier === 'elite'
+        'Full betting suite',
+        'Up to $100K daily volume',
+        'Complete line controls',
+        'API feed integration',
+        'Escrow pool management',
+        'White-label options',
+        'Dedicated account manager'
+      ]
     }
-  ];
-
-  const handleTierSelect = (tierId: string) => {
-    if (operator) {
-      toast({
-        title: "Upgrade Required",
-        description: "Contact support to upgrade your existing license tier.",
-        variant: "default"
-      });
-      return;
-    }
-    
-    setSelectedTier(tierId as 'starter' | 'pro' | 'elite');
-    setShowApplicationForm(true);
   };
 
-  const handleApplicationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!businessName.trim()) return;
+  const handleApply = async () => {
+    if (!businessName.trim()) {
+      toast.error('Please enter a business name');
+      return;
+    }
 
-    setApplying(true);
+    setIsApplying(true);
     try {
       await applyForLicense({
         businessName: businessName.trim(),
         tier: selectedTier
       });
-
-      toast({
-        title: "Application Submitted",
-        description: "Your bookie license application has been submitted for review. You'll receive an email confirmation shortly.",
-        variant: "default"
-      });
-
-      setShowApplicationForm(false);
-      setBusinessName('');
+      toast.success('Application submitted successfully!');
+      navigate('/dashboard');
     } catch (error) {
-      toast({
-        title: "Application Failed",
-        description: error instanceof Error ? error.message : "Failed to submit application",
-        variant: "destructive"
-      });
+      toast.error('Failed to submit application');
+      console.error('Application error:', error);
     } finally {
-      setApplying(false);
+      setIsApplying(false);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+            <p>Please sign in to access bookie licensing.</p>
+            <Button onClick={() => navigate('/auth')} className="mt-4">
+              Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Loading...</p>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (operator) {
+    return (
+      <div className="min-h-screen gradient-bg p-4">
+        <div className="container mx-auto max-w-4xl">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/dashboard')}
+            className="mb-6"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-6 w-6 text-green-500" />
+                Bookie License Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Business Name</Label>
+                  <p className="font-medium">{operator.business_name}</p>
+                </div>
+                <div>
+                  <Label>Tier</Label>
+                  <p className="font-medium capitalize">{operator.tier}</p>
+                </div>
+                <div>
+                  <Label>Status</Label>
+                  <p className={`font-medium capitalize ${
+                    operator.status === 'active' ? 'text-green-600' : 
+                    operator.status === 'pending' ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
+                    {operator.status}
+                  </p>
+                </div>
+                <div>
+                  <Label>Monthly Fee</Label>
+                  <p className="font-medium">${operator.monthly_fee}</p>
+                </div>
+              </div>
+              
+              {operator.status === 'pending' && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800">
+                    Your application is being reviewed. You'll be notified once approved.
+                  </p>
+                </div>
+              )}
+              
+              {operator.status === 'active' && (
+                <Button onClick={() => navigate('/bookie-dashboard')} className="w-full">
+                  Access Bookie Dashboard
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen gradient-bg">
-      <div className="px-4 pt-8 pb-6">
-        {/* Header */}
+    <div className="min-h-screen gradient-bg p-4">
+      <div className="container mx-auto max-w-6xl">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/dashboard')}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Button>
+
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-3">EdgeStake Bookie Licensing</h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            Become a licensed operator and create your own betting lines
+          <h1 className="text-4xl font-bold mb-4">Become a Bookie Operator</h1>
+          <p className="text-xl text-muted-foreground">
+            Join EdgeStake's network of licensed betting operators
           </p>
-          
-          {operator && (
-            <Alert className="max-w-2xl mx-auto mb-6">
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Current Status:</strong> {operator.status === 'pending' ? 'Application Pending Review' : 
-                operator.status === 'active' ? `Active ${operator.tier} License` : 
-                operator.status.charAt(0).toUpperCase() + operator.status.slice(1)}
-                {operator.status === 'active' && (
-                  <span className="ml-2 text-green-600 font-semibold">
-                    • ${operator.monthly_fee}/month
-                  </span>
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
 
-        {/* Platform Benefits */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Shield className="h-8 w-8 mx-auto mb-2 text-green-500" />
-              <p className="text-sm font-semibold">Secure Escrow</p>
-              <p className="text-xs text-muted-foreground">Protected funds</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <Users className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-              <p className="text-sm font-semibold">Syndicate Pools</p>
-              <p className="text-xs text-muted-foreground">Group betting</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <DollarSign className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-              <p className="text-sm font-semibold">2.5% Platform Fee</p>
-              <p className="text-xs text-muted-foreground">Competitive rates</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-purple-500" />
-              <p className="text-sm font-semibold">Analytics</p>
-              <p className="text-xs text-muted-foreground">Real-time data</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Licensing Tiers */}
-        <div className="space-y-6 mb-8">
-          {tiers.map((tier) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {Object.entries(tiers).map(([tier, config]) => (
             <BookieTierCard
-              key={tier.id}
-              tier={tier}
-              onSelect={handleTierSelect}
-              disabled={applying}
+              key={tier}
+              tier={tier as 'starter' | 'pro' | 'elite'}
+              monthlyFee={config.monthlyFee}
+              dailyCap={config.dailyCap}
+              features={config.features}
+              isActive={selectedTier === tier}
+              onSelect={() => setSelectedTier(tier as 'starter' | 'pro' | 'elite')}
             />
           ))}
         </div>
 
-        {/* Compliance Notice */}
-        <Card className="max-w-4xl mx-auto bg-blue-50/50 border-blue-200">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-blue-600" />
-              Compliance & Requirements
-            </CardTitle>
+            <CardTitle>Application Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <h4 className="font-semibold text-blue-800 mb-2">Required Verification</h4>
-                <ul className="space-y-1 text-blue-700">
-                  <li>• KYC identity verification</li>
-                  <li>• Business registration documents</li>
-                  <li>• Bank account or crypto escrow validation</li>
-                  <li>• Liquidity proof ($10K minimum)</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-blue-800 mb-2">Platform Rules</h4>
-                <ul className="space-y-1 text-blue-700">
-                  <li>• Equal-stake enforcement for all bets</li>
-                  <li>• 24-48h hold for wins over $5K</li>
-                  <li>• Automatic escrow for matched funds</li>
-                  <li>• Real-time audit trails required</li>
-                </ul>
-              </div>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="businessName">Business Name</Label>
+              <Input
+                id="businessName"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                placeholder="Enter your business name"
+              />
             </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">Selected Plan: {tiers[selectedTier].monthlyFee === 249 ? 'Local Bookie' : tiers[selectedTier].monthlyFee === 499 ? 'Regional Host' : 'Elite Operator'}</h3>
+              <p className="text-blue-800">
+                Monthly Fee: ${tiers[selectedTier].monthlyFee} | Daily Cap: {tiers[selectedTier].dailyCap}
+              </p>
+            </div>
+            
+            <Button 
+              onClick={handleApply} 
+              disabled={isApplying || !businessName.trim()}
+              className="w-full"
+            >
+              {isApplying ? 'Submitting Application...' : 'Submit Application'}
+            </Button>
           </CardContent>
         </Card>
-
-        {/* Application Form Dialog */}
-        <Dialog open={showApplicationForm} onOpenChange={setShowApplicationForm}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Apply for {selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)} License</DialogTitle>
-            </DialogHeader>
-            
-            <form onSubmit={handleApplicationSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="businessName">Business Name</Label>
-                <Input
-                  id="businessName"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Enter your business name"
-                  required
-                  disabled={applying}
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  This will appear on your bookie profile and lines
-                </p>
-              </div>
-              
-              <Alert>
-                <Info className="h-4 w-4" />
-                <AlertDescription>
-                  After submitting, you'll need to complete KYC verification and provide business documentation before your license is approved.
-                </AlertDescription>
-              </Alert>
-              
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowApplicationForm(false)}
-                  className="flex-1"
-                  disabled={applying}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1"
-                  disabled={applying || !businessName.trim()}
-                >
-                  {applying ? 'Submitting...' : 'Apply Now'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
