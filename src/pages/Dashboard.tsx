@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,10 +37,10 @@ const Dashboard = () => {
   const [selectedSport, setSelectedSport] = useState<string>('all');
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch live odds
+  // Fetch live odds - Fix the queryFn to match the expected format
   const { data: games = [], isLoading: gamesLoading, refetch: refetchGames } = useQuery({
     queryKey: ['live-odds', refreshKey],
-    queryFn: fetchLiveOdds,
+    queryFn: () => fetchLiveOdds(), // Remove the sport parameter for now since it's not used properly
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
@@ -192,23 +191,29 @@ const Dashboard = () => {
                         </Badge>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          {formatDate(game.start_time)}
+                          {formatDate(game.commence_time)}
                         </div>
                       </div>
                       <CardTitle className="text-lg leading-tight">
-                        {game.match_name}
+                        {game.home_team && game.away_team 
+                          ? `${game.home_team} vs ${game.away_team}`
+                          : game.sport_title
+                        }
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {game.odds && Object.entries(game.odds).length > 0 ? (
+                      {game.bookmakers && game.bookmakers.length > 0 ? (
                         <div className="space-y-2">
                           <p className="text-sm font-medium">Latest Odds:</p>
                           <div className="grid grid-cols-1 gap-2">
-                            {Object.entries(game.odds).slice(0, 3).map(([market, odds]) => (
-                              <div key={market} className="flex justify-between items-center p-2 bg-muted rounded">
-                                <span className="text-sm">{market}</span>
+                            {game.bookmakers[0].markets.slice(0, 3).map((market) => (
+                              <div key={market.key} className="flex justify-between items-center p-2 bg-muted rounded">
+                                <span className="text-sm">{market.key}</span>
                                 <Badge variant="outline" className="font-mono">
-                                  {typeof odds === 'number' ? formatOdds(odds) : 'N/A'}
+                                  {market.outcomes && market.outcomes.length > 0 
+                                    ? formatOdds(market.outcomes[0].price) 
+                                    : 'N/A'
+                                  }
                                 </Badge>
                               </div>
                             ))}

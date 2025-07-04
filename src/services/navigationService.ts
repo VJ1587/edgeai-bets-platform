@@ -1,4 +1,3 @@
-
 import { NavigateFunction } from 'react-router-dom';
 
 export class NavigationService {
@@ -22,7 +21,7 @@ export class NavigationService {
   }
 
   static navigateWallet() {
-    this.navigate?.(wallet);
+    this.navigate?.('/wallet');
   }
 
   static navigateProfile() {
