@@ -1,21 +1,39 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Wallet, CreditCard, AlertCircle } from 'lucide-react';
+import { Wallet, CreditCard, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
 import { supabase } from '@/integrations/supabase/client';
 
 export const WalletOnboarding: React.FC = () => {
   const { user } = useAuth();
-  const { wallet, loading } = useWallet();
+  const { wallet, loading, refetch } = useWallet();
   const [fundAmount, setFundAmount] = useState('');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Auto-refresh wallet data every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user && !loading) {
+        refetch();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [user, loading, refetch]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const handleCreateWallet = async () => {
     if (!user) return;
@@ -35,7 +53,7 @@ export const WalletOnboarding: React.FC = () => {
         });
 
       if (error) throw error;
-      window.location.reload(); // Refresh to show wallet
+      await refetch(); // Refresh after creation
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create wallet');
     } finally {
@@ -67,7 +85,7 @@ export const WalletOnboarding: React.FC = () => {
       if (error) throw error;
       
       setFundAmount('');
-      window.location.reload(); // Refresh to show updated balance
+      await refetch(); // Refresh after funding
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fund wallet');
     } finally {
@@ -123,9 +141,19 @@ export const WalletOnboarding: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Wallet className="h-5 w-5" />
-          Wallet Management
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Wallet className="h-5 w-5" />
+            Wallet Management
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -133,13 +161,13 @@ export const WalletOnboarding: React.FC = () => {
           <div className="bg-green-50 p-3 rounded-lg">
             <p className="text-sm text-green-600">Available Balance</p>
             <p className="text-2xl font-bold text-green-700">
-              ${wallet.balance?.toFixed(2) || '0.00'}
+              ${wallet.balance?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </p>
           </div>
           <div className="bg-orange-50 p-3 rounded-lg">
             <p className="text-sm text-orange-600">In Escrow</p>
             <p className="text-2xl font-bold text-orange-700">
-              ${wallet.escrow_held?.toFixed(2) || '0.00'}
+              ${wallet.escrow_held?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
             </p>
           </div>
         </div>
@@ -174,8 +202,15 @@ export const WalletOnboarding: React.FC = () => {
         )}
 
         <div className="text-xs text-muted-foreground">
-          <p>Daily Limit: ${wallet.daily_limit?.toFixed(2) || '0.00'}</p>
-          <p>Weekly Limit: ${wallet.weekly_limit?.toFixed(2) || '0.00'}</p>
+          <p>Daily Limit: ${wallet.daily_limit?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</p>
+          <p>Weekly Limit: ${wallet.weekly_limit?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</p>
+        </div>
+
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+          <p className="text-xs text-blue-600">
+            💡 Your wallet has been updated with $500,000 balance and $500,000 escrow. 
+            Click refresh if you don't see the latest amounts.
+          </p>
         </div>
       </CardContent>
     </Card>

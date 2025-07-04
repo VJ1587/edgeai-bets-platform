@@ -26,31 +26,48 @@ export const useWallet = () => {
 
     try {
       setLoading(true);
+      setError(null);
+      
+      // Use maybeSingle() instead of single() to handle cases where no wallet exists
       const { data, error } = await supabase
         .from('user_wallets')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      setWallet(data);
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      if (data) {
+        console.log('Wallet data fetched:', data);
+        setWallet(data);
+      } else {
+        console.log('No wallet found for user, creating default wallet...');
+        // If no wallet exists, create one
+        const { data: newWallet, error: createError } = await supabase
+          .from('user_wallets')
+          .insert({
+            user_id: user.id,
+            balance: 0.00,
+            escrow_held: 0.00,
+            daily_limit: 1000.00,
+            weekly_limit: 5000.00
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating wallet:', createError);
+          throw createError;
+        }
+
+        setWallet(newWallet);
+      }
     } catch (err) {
-      console.error('Error fetching wallet:', err);
+      console.error('Error in fetchWallet:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch wallet');
-      
-      // Set mock wallet data for development with all required fields
-      setWallet({
-        id: 'mock-wallet-id',
-        user_id: user.id,
-        balance: 100.00,
-        escrow_held: 0.00,
-        margin_status: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        last_transaction_at: null,
-        daily_limit: 1000.00,
-        weekly_limit: 5000.00
-      });
     } finally {
       setLoading(false);
     }
