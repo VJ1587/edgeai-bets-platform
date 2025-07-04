@@ -840,6 +840,92 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_activity: {
+        Row: {
+          bet_id: string
+          bonus_amount: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          share_link_id: string | null
+          source_user_id: string
+          status: string
+          target_user_id: string | null
+        }
+        Insert: {
+          bet_id: string
+          bonus_amount?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          share_link_id?: string | null
+          source_user_id: string
+          status?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          bet_id?: string
+          bonus_amount?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          share_link_id?: string | null
+          source_user_id?: string
+          status?: string
+          target_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_activity_share_link_id_fkey"
+            columns: ["share_link_id"]
+            isOneToOne: false
+            referencedRelation: "share_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      share_links: {
+        Row: {
+          bet_id: string
+          channel: string | null
+          clicks: number
+          conversions: number
+          converted_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          last_clicked_at: string | null
+          source_user_id: string
+          type: string
+        }
+        Insert: {
+          bet_id: string
+          channel?: string | null
+          clicks?: number
+          conversions?: number
+          converted_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_clicked_at?: string | null
+          source_user_id: string
+          type: string
+        }
+        Update: {
+          bet_id?: string
+          channel?: string | null
+          clicks?: number
+          conversions?: number
+          converted_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_clicked_at?: string | null
+          source_user_id?: string
+          type?: string
+        }
+        Relationships: []
+      }
       user_bet_audit: {
         Row: {
           action_type: string

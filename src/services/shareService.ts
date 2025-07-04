@@ -150,54 +150,62 @@ export class ShareService {
   }
 
   static async trackClick(shareId: string): Promise<void> {
-    await supabase
+    const { error } = await supabase
       .from('share_links')
       .update({ 
         clicks: supabase.sql`clicks + 1`,
         last_clicked_at: new Date().toISOString()
       })
       .eq('id', shareId);
+    
+    if (error) console.error('Error tracking click:', error);
   }
 
   static async trackConversion(shareId: string): Promise<void> {
-    await supabase
+    const { error } = await supabase
       .from('share_links')
       .update({ 
         conversions: supabase.sql`conversions + 1`,
         converted_at: new Date().toISOString()
       })
       .eq('id', shareId);
+    
+    if (error) console.error('Error tracking conversion:', error);
   }
 
   static async processReferralBonus(sourceUserId: string, targetUserId: string, betId: string): Promise<void> {
     const bonusAmount = 5.00; // $5 bonus for both parties
 
-    // Add bonus to both users' wallets
-    const { error: sourceError } = await supabase
-      .from('user_wallets')
-      .update({
-        balance: supabase.sql`balance + ${bonusAmount}`
-      })
-      .eq('user_id', sourceUserId);
+    try {
+      // Add bonus to both users' wallets
+      const { error: sourceError } = await supabase
+        .from('user_wallets')
+        .update({
+          balance: supabase.sql`balance + ${bonusAmount}`
+        })
+        .eq('user_id', sourceUserId);
 
-    const { error: targetError } = await supabase
-      .from('user_wallets')
-      .update({
-        balance: supabase.sql`balance + ${bonusAmount}`
-      })
-      .eq('user_id', targetUserId);
+      const { error: targetError } = await supabase
+        .from('user_wallets')
+        .update({
+          balance: supabase.sql`balance + ${bonusAmount}`
+        })
+        .eq('user_id', targetUserId);
 
-    if (!sourceError && !targetError) {
-      // Log referral completion
-      await supabase
-        .from('referral_activity')
-        .insert({
-          source_user_id: sourceUserId,
-          target_user_id: targetUserId,
-          bet_id: betId,
-          bonus_amount: bonusAmount,
-          status: 'completed'
-        });
+      if (!sourceError && !targetError) {
+        // Log referral completion
+        await supabase
+          .from('referral_activity')
+          .insert({
+            source_user_id: sourceUserId,
+            target_user_id: targetUserId,
+            bet_id: betId,
+            bonus_amount: bonusAmount,
+            status: 'completed'
+          });
+      }
+    } catch (error) {
+      console.error('Error processing referral bonus:', error);
     }
   }
 }

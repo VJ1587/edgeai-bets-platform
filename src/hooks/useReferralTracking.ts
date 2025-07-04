@@ -35,7 +35,7 @@ export const useReferralTracking = () => {
     if (!user) return;
 
     try {
-      // Get user's referral activity
+      // Get user's referral activity from the new table
       const { data: referrals, error } = await supabase
         .from('referral_activity')
         .select('*')
@@ -70,7 +70,7 @@ export const useReferralTracking = () => {
 
   const fetchTopReferrers = async () => {
     try {
-      // This would typically be a view or function in the database
+      // Get completed referrals with profile information
       const { data, error } = await supabase
         .from('referral_activity')
         .select(`
