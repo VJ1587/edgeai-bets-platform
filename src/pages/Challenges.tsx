@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Grid3x3, Plus, Coins } from 'lucide-react';
+import { Users, Trophy, Grid3x3, Plus, Coins, Share } from 'lucide-react';
 import { CreateChallengeModal } from '@/components/CreateChallengeModal';
 import { GroupBetCard } from '@/components/GroupBetCard';
 import { SquareCard } from '@/components/SquareCard';
+import { ReferralDashboard } from '@/components/ReferralDashboard';
 import { useWallet } from '@/hooks/useWallet';
 import { useBets } from '@/hooks/useBets';
 
@@ -147,7 +147,7 @@ const Challenges = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="1v1" className="text-xs">
               <Users className="h-4 w-4 mr-1" />
               1v1
@@ -159,6 +159,10 @@ const Challenges = () => {
             <TabsTrigger value="squares" className="text-xs">
               <Grid3x3 className="h-4 w-4 mr-1" />
               Squares
+            </TabsTrigger>
+            <TabsTrigger value="referrals" className="text-xs">
+              <Share className="h-4 w-4 mr-1" />
+              Referrals
             </TabsTrigger>
           </TabsList>
 
@@ -233,6 +237,11 @@ const Challenges = () => {
             {mockSquares.map((square) => (
               <SquareCard key={square.id} square={square} />
             ))}
+          </TabsContent>
+
+          {/* Referrals Tab */}
+          <TabsContent value="referrals" className="space-y-4">
+            <ReferralDashboard />
           </TabsContent>
         </Tabs>
 
