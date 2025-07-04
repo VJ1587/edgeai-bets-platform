@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Filter } from 'lucide-react';
+import { RefreshCw, Filter, Crown, Sword, Users, TrendingUp, Shield, Zap, Trophy, Target } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { WalletOnboarding } from '@/components/WalletOnboarding';
 import { SmartBetInterface } from '@/components/SmartBetInterface';
@@ -12,10 +11,16 @@ import { HeadToHeadBetting } from '@/components/HeadToHeadBetting';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { OddsCard } from '@/components/OddsCard';
 import { PickCard } from '@/components/PickCard';
+import { TierBadge } from '@/components/enhanced/TierBadge';
+import { ChallengeTypeCard } from '@/components/enhanced/ChallengeTypeCard';
+import { DemoEventCard } from '@/components/enhanced/DemoEventCard';
+import { EscrowStatus } from '@/components/enhanced/EscrowStatus';
 import { useWallet } from '@/hooks/useWallet';
 import { useBookieOperator } from '@/hooks/useBookieOperator';
 import { fetchLiveOdds, OddsData } from '@/services/oddsService';
-import { Shield, TrendingUp, Users, Wallet, Trophy, Crown, Building, BarChart3 } from 'lucide-react';
+import { challengeTypes } from '@/data/challengeTypes';
+import { demoEvents } from '@/data/demoEvents';
+import { Building, BarChart3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -32,8 +37,21 @@ const Dashboard = () => {
 
   // Check if user is admin
   const isAdmin = user?.email === 'vimj1915@gmail.com' || user?.email?.includes('@edgestake.ai');
+  
+  // Mock user tier - in real app this would come from user profile
+  const userTier = 'Elite' as const;
+  
+  // Mock escrow transaction
+  const mockEscrow = {
+    id: '1',
+    amount: 2500,
+    status: 'locked' as const,
+    platformFee: 62.50,
+    escrowFee: 25,
+    createdAt: new Date().toISOString()
+  };
 
-  // Mock picks data
+  // Mock picks data with enhanced structure
   const picks = [
     {
       id: '1',
@@ -112,6 +130,14 @@ const Dashboard = () => {
     console.log('🎲 Bet clicked:', { game: game.id, market, outcome });
   };
 
+  const handleChallengeSelect = (challenge: any) => {
+    console.log('Selected challenge:', challenge);
+  };
+
+  const handleEventBet = (event: any) => {
+    console.log('Betting on event:', event);
+  };
+
   const sports = ['all', ...Array.from(new Set(games.map(game => game.sport_title)))];
   const filteredOdds = selectedSport === 'all' 
     ? games 
@@ -120,6 +146,9 @@ const Dashboard = () => {
   const filteredPicks = selectedSport === 'all' 
     ? picks 
     : picks.filter(pick => pick.sport === selectedSport);
+
+  const featuredEvents = demoEvents.filter(event => event.featured);
+  const upcomingEvents = demoEvents.filter(event => !event.featured).slice(0, 6);
 
   const formatLastUpdated = () => {
     if (!lastUpdated) return '';
@@ -134,11 +163,16 @@ const Dashboard = () => {
   if (!user) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-4 sm:p-6">
-            <p className="text-sm sm:text-base text-muted-foreground text-center">
-              Please sign in to access the dashboard.
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="p-6">
+            <Crown className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Welcome to EdgeStake</h2>
+            <p className="text-muted-foreground mb-4">
+              Bet like a king. Win like a legend.
             </p>
+            <Button className="w-full" onClick={() => navigate('/auth')}>
+              Sign In to Enter The Arena
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -148,17 +182,65 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen gradient-bg">
       <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-center sm:text-left">
-            EdgeStake Dashboard
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground text-center sm:text-left">
-            Welcome back, {user.email}
+        {/* Enhanced Header */}
+        <div className="mb-6 sm:mb-8 text-center">
+          <div className="flex justify-center items-center gap-4 mb-4">
+            <Crown className="h-8 w-8 text-yellow-500" />
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              EdgeStake Arena
+            </h1>
+            <Crown className="h-8 w-8 text-yellow-500" />
+          </div>
+          <div className="flex justify-center items-center gap-4 mb-2">
+            <p className="text-lg text-muted-foreground">Welcome back, Champion</p>
+            <TierBadge tier={userTier} />
+          </div>
+          <p className="text-sm text-muted-foreground italic">
+            "Enter The Pit. Rise to Kingship."
           </p>
         </div>
 
-        <Tabs defaultValue="betting" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 h-auto p-2 gap-1 bg-card/50">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
+            <CardContent className="p-4 text-center">
+              <Trophy className="h-6 w-6 text-green-600 mx-auto mb-2" />
+              <p className="text-xl font-bold text-green-600">12</p>
+              <p className="text-xs text-muted-foreground">Wins Today</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50">
+            <CardContent className="p-4 text-center">
+              <Target className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+              <p className="text-xl font-bold text-blue-600">73%</p>
+              <p className="text-xs text-muted-foreground">Win Rate</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-purple-50 to-violet-50">
+            <CardContent className="p-4 text-center">
+              <Zap className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+              <p className="text-xl font-bold text-purple-600">5</p>
+              <p className="text-xs text-muted-foreground">Active Bets</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-yellow-50 to-amber-50">
+            <CardContent className="p-4 text-center">
+              <Shield className="h-6 w-6 text-yellow-600 mx-auto mb-2" />
+              <p className="text-xl font-bold text-yellow-600">$8.2K</p>
+              <p className="text-xs text-muted-foreground">In Escrow</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="arena" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-8 h-auto p-2 gap-1 bg-card/50">
+            <TabsTrigger 
+              value="arena" 
+              className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
+            >
+              <Sword className="h-5 w-5" />
+              <span>Arena</span>
+            </TabsTrigger>
             <TabsTrigger 
               value="betting" 
               className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
@@ -184,15 +266,15 @@ const Dashboard = () => {
               value="h2h" 
               className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
             >
-              <Trophy className="h-5 w-5" />
+              <Users className="h-5 w-5" />
               <span>Head-to-Head</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="wallet" 
+              value="escrow" 
               className="flex flex-col items-center gap-2 text-sm font-medium p-4 min-h-[60px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all"
             >
-              <Wallet className="h-5 w-5" />
-              <span>Wallet</span>
+              <Shield className="h-5 w-5" />
+              <span>Escrow</span>
             </TabsTrigger>
             <TabsTrigger 
               value="bookie" 
@@ -211,6 +293,41 @@ const Dashboard = () => {
               </TabsTrigger>
             )}
           </TabsList>
+
+          <TabsContent value="arena" className="mt-6">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">Choose Your Battle</h2>
+                <p className="text-muted-foreground">Select your challenge type and prove your worth</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {challengeTypes.map((challenge) => (
+                  <ChallengeTypeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    onSelect={handleChallengeSelect}
+                    featured={challenge.id === 'kingmaker'}
+                  />
+                ))}
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">🔥 Featured Events</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {featuredEvents.map((event) => (
+                      <DemoEventCard
+                        key={event.id}
+                        event={event}
+                        onBet={handleEventBet}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
 
           <TabsContent value="betting" className="mt-6 space-y-0">
             {gamesLoading ? (
@@ -385,9 +502,41 @@ const Dashboard = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="wallet" className="mt-6">
-            <div className="max-w-full">
-              <WalletOnboarding />
+          <TabsContent value="escrow" className="mt-6">
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">Escrow Vault</h2>
+                <p className="text-muted-foreground">Your secured funds and transaction history</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <EscrowStatus transaction={mockEscrow} />
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Fee Structure</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Platform Fee</span>
+                      <span className="font-medium">2.5%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Escrow Fee (>$5K)</span>
+                      <span className="font-medium">+1%</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Syndicate Fee</span>
+                      <span className="font-medium">0.5% - 2%</span>
+                    </div>
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between font-medium">
+                        <span>Daily Payout Limit</span>
+                        <span>$100K</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 
