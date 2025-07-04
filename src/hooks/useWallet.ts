@@ -14,6 +14,7 @@ export const useWallet = () => {
 
   useEffect(() => {
     if (!user) {
+      setWallet(null);
       setLoading(false);
       return;
     }
@@ -28,7 +29,8 @@ export const useWallet = () => {
       setLoading(true);
       setError(null);
       
-      // Use maybeSingle() instead of single() to handle cases where no wallet exists
+      console.log('Fetching wallet for user:', user.id);
+      
       const { data, error } = await supabase
         .from('user_wallets')
         .select('*')
@@ -36,38 +38,22 @@ export const useWallet = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Supabase error fetching wallet:', error);
         throw error;
       }
 
       if (data) {
-        console.log('Wallet data fetched:', data);
+        console.log('Wallet data found:', data);
         setWallet(data);
       } else {
-        console.log('No wallet found for user, creating default wallet...');
-        // If no wallet exists, create one
-        const { data: newWallet, error: createError } = await supabase
-          .from('user_wallets')
-          .insert({
-            user_id: user.id,
-            balance: 0.00,
-            escrow_held: 0.00,
-            daily_limit: 1000.00,
-            weekly_limit: 5000.00
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('Error creating wallet:', createError);
-          throw createError;
-        }
-
-        setWallet(newWallet);
+        console.log('No wallet found, wallet should exist with updated balances');
+        // Don't create a new wallet here, just set to null so component shows the issue
+        setWallet(null);
       }
     } catch (err) {
       console.error('Error in fetchWallet:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch wallet');
+      setWallet(null);
     } finally {
       setLoading(false);
     }

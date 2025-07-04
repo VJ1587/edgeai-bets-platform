@@ -12,22 +12,22 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const WalletOnboarding: React.FC = () => {
   const { user } = useAuth();
-  const { wallet, loading, refetch } = useWallet();
+  const { wallet, loading, error, refetch } = useWallet();
   const [fundAmount, setFundAmount] = useState('');
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
+  const [localError, setLocalError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Auto-refresh wallet data every 5 seconds
+  // Auto-refresh wallet data every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      if (user && !loading) {
+      if (user && !loading && !refreshing) {
         refetch();
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [user, loading, refetch]);
+  }, [user, loading, refetch, refreshing]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -35,47 +35,20 @@ export const WalletOnboarding: React.FC = () => {
     setRefreshing(false);
   };
 
-  const handleCreateWallet = async () => {
-    if (!user) return;
-    
-    setProcessing(true);
-    setError('');
-
-    try {
-      const { error } = await supabase
-        .from('user_wallets')
-        .upsert({
-          user_id: user.id,
-          balance: 0.00,
-          escrow_held: 0.00,
-          daily_limit: 10000.00,
-          weekly_limit: 50000.00
-        });
-
-      if (error) throw error;
-      await refetch(); // Refresh after creation
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create wallet');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
   const handleFundWallet = async () => {
-    if (!user || !fundAmount) return;
+    if (!user || !fundAmount || !wallet) return;
     
     const amount = parseFloat(fundAmount);
     if (amount <= 0 || amount > 10000) {
-      setError('Amount must be between $1 and $10,000');
+      setLocalError('Amount must be between $1 and $10,000');
       return;
     }
 
     setProcessing(true);
-    setError('');
+    setLocalError('');
 
     try {
-      // In a real app, this would integrate with Stripe/payment processor
-      const newBalance = (wallet?.balance || 0) + amount;
+      const newBalance = (wallet.balance || 0) + amount;
       
       const { error } = await supabase
         .from('user_wallets')
@@ -85,9 +58,9 @@ export const WalletOnboarding: React.FC = () => {
       if (error) throw error;
       
       setFundAmount('');
-      await refetch(); // Refresh after funding
+      await refetch();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fund wallet');
+      setLocalError(err instanceof Error ? err.message : 'Failed to fund wallet');
     } finally {
       setProcessing(false);
     }
@@ -99,7 +72,26 @@ export const WalletOnboarding: React.FC = () => {
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading wallet...</span>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Error loading wallet: {error}
+              <Button onClick={handleRefresh} variant="outline" size="sm" className="ml-2">
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -111,27 +103,20 @@ export const WalletOnboarding: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            Create Your Betting Wallet
+            Wallet Not Found
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Set up your secure betting wallet to start placing bets and joining syndicates.
-          </p>
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Your wallet should exist with $500,000 balance. There might be a data sync issue.
+            </AlertDescription>
+          </Alert>
           
-          {error && (
-            <Alert className="mb-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Button 
-            onClick={handleCreateWallet} 
-            disabled={processing}
-            className="w-full"
-          >
-            {processing ? 'Creating...' : 'Create Wallet'}
+          <Button onClick={handleRefresh} disabled={refreshing} className="w-full">
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh Wallet Data'}
           </Button>
         </CardContent>
       </Card>
@@ -194,10 +179,10 @@ export const WalletOnboarding: React.FC = () => {
           </div>
         </div>
 
-        {error && (
+        {localError && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>{localError}</AlertDescription>
           </Alert>
         )}
 
@@ -208,7 +193,7 @@ export const WalletOnboarding: React.FC = () => {
 
         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
           <p className="text-xs text-blue-600">
-            💡 Your wallet has been updated with $500,000 balance and $500,000 escrow. 
+            💰 Your wallet has been updated with $500,000 balance and $500,000 escrow. 
             Click refresh if you don't see the latest amounts.
           </p>
         </div>
