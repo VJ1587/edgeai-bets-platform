@@ -70,25 +70,32 @@ export const useReferralTracking = () => {
 
   const fetchTopReferrers = async () => {
     try {
-      // Get completed referrals with profile information
-      const { data, error } = await supabase
+      // Get completed referrals grouped by user
+      const { data: referrals, error } = await supabase
         .from('referral_activity')
-        .select(`
-          source_user_id,
-          profiles!referral_activity_source_user_id_fkey(full_name)
-        `)
+        .select('source_user_id')
         .eq('status', 'completed');
 
       if (error) throw error;
 
+      // Get profile information separately
+      const userIds = [...new Set(referrals?.map(r => r.source_user_id) || [])];
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', userIds);
+
+      if (profileError) throw profileError;
+
       // Group by user and calculate stats
       const userStats = new Map();
-      data?.forEach(item => {
+      referrals?.forEach(item => {
         const userId = item.source_user_id;
         if (!userStats.has(userId)) {
+          const profile = profiles?.find(p => p.id === userId);
           userStats.set(userId, {
             user_id: userId,
-            username: item.profiles?.full_name || 'Anonymous',
+            username: profile?.full_name || 'Anonymous',
             total_referrals: 0
           });
         }

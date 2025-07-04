@@ -150,10 +150,23 @@ export class ShareService {
   }
 
   static async trackClick(shareId: string): Promise<void> {
+    // Get current clicks count first
+    const { data: currentLink, error: fetchError } = await supabase
+      .from('share_links')
+      .select('clicks')
+      .eq('id', shareId)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching current clicks:', fetchError);
+      return;
+    }
+
+    // Update with incremented value
     const { error } = await supabase
       .from('share_links')
       .update({ 
-        clicks: supabase.sql`clicks + 1`,
+        clicks: (currentLink.clicks || 0) + 1,
         last_clicked_at: new Date().toISOString()
       })
       .eq('id', shareId);
@@ -162,10 +175,23 @@ export class ShareService {
   }
 
   static async trackConversion(shareId: string): Promise<void> {
+    // Get current conversions count first
+    const { data: currentLink, error: fetchError } = await supabase
+      .from('share_links')
+      .select('conversions')
+      .eq('id', shareId)
+      .single();
+    
+    if (fetchError) {
+      console.error('Error fetching current conversions:', fetchError);
+      return;
+    }
+
+    // Update with incremented value
     const { error } = await supabase
       .from('share_links')
       .update({ 
-        conversions: supabase.sql`conversions + 1`,
+        conversions: (currentLink.conversions || 0) + 1,
         converted_at: new Date().toISOString()
       })
       .eq('id', shareId);
@@ -177,18 +203,36 @@ export class ShareService {
     const bonusAmount = 5.00; // $5 bonus for both parties
 
     try {
-      // Add bonus to both users' wallets
+      // Get current balances first
+      const { data: sourceWallet, error: sourceWalletError } = await supabase
+        .from('user_wallets')
+        .select('balance')
+        .eq('user_id', sourceUserId)
+        .single();
+
+      const { data: targetWallet, error: targetWalletError } = await supabase
+        .from('user_wallets')
+        .select('balance')
+        .eq('user_id', targetUserId)
+        .single();
+
+      if (sourceWalletError || targetWalletError) {
+        console.error('Error fetching wallet balances:', { sourceWalletError, targetWalletError });
+        return;
+      }
+
+      // Update balances with incremented values
       const { error: sourceError } = await supabase
         .from('user_wallets')
         .update({
-          balance: supabase.sql`balance + ${bonusAmount}`
+          balance: (sourceWallet.balance || 0) + bonusAmount
         })
         .eq('user_id', sourceUserId);
 
       const { error: targetError } = await supabase
         .from('user_wallets')
         .update({
-          balance: supabase.sql`balance + ${bonusAmount}`
+          balance: (targetWallet.balance || 0) + bonusAmount
         })
         .eq('user_id', targetUserId);
 
