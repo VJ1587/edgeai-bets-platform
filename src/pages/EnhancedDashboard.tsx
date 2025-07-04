@@ -225,7 +225,7 @@ const EnhancedDashboard = () => {
                       <span className="font-medium">2.5%</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>Escrow Fee (>$5K)</span>
+                      <span>Escrow Fee ({'>'}$5K)</span>
                       <span className="font-medium">+1%</span>
                     </div>
                     <div className="flex justify-between text-sm">

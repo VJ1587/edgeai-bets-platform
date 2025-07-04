@@ -11,6 +11,7 @@ import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
 import Home from '@/pages/Home';
 import Dashboard from '@/pages/Dashboard';
+import EnhancedDashboard from '@/pages/EnhancedDashboard';
 import Picks from '@/pages/Picks';
 import Lines from '@/pages/Lines';
 import Challenges from '@/pages/Challenges';
@@ -49,6 +50,7 @@ function App() {
                   <Route index element={<Home />} />
                   <Route path="home" element={<Home />} />
                   <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="arena" element={<EnhancedDashboard />} />
                   <Route path="picks" element={<Picks />} />
                   <Route path="lines" element={<Lines />} />
                   <Route path="challenges" element={<Challenges />} />

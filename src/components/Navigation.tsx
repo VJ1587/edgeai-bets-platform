@@ -13,9 +13,11 @@ import {
   LogOut,
   Shield,
   Menu,
-  X
+  X,
+  Sword
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigationCommands } from '@/hooks/useNavigationCommands';
 import { supabase } from '@/integrations/supabase/client';
 
 const Navigation = () => {
@@ -23,6 +25,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigationCommands = useNavigationCommands();
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -36,12 +39,13 @@ const Navigation = () => {
   const isAdmin = user?.email === 'vimj1915@gmail.com' || user?.email?.includes('@edgestake.ai');
 
   const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/dashboard', icon: TrendingUp, label: 'Dashboard' },
-    { path: '/picks', icon: BarChart3, label: 'Picks' },
-    { path: '/lines', icon: TrendingUp, label: 'Lines' },
-    { path: '/challenges', icon: Users, label: 'Challenges' },
-    { path: '/plans', icon: CreditCard, label: 'Plans' },
+    { path: '/', icon: Home, label: 'Home', command: navigationCommands.navigateHome },
+    { path: '/dashboard', icon: TrendingUp, label: 'Dashboard', command: navigationCommands.navigateChallenges },
+    { path: '/arena', icon: Sword, label: 'Arena', command: navigationCommands.navigateArena },
+    { path: '/picks', icon: BarChart3, label: 'Picks', command: navigationCommands.navigateChallenges },
+    { path: '/lines', icon: TrendingUp, label: 'Lines', command: navigationCommands.navigateChallenges },
+    { path: '/challenges', icon: Users, label: 'Challenges', command: navigationCommands.navigateChallenges },
+    { path: '/plans', icon: CreditCard, label: 'Plans', command: navigationCommands.navigateProfile },
   ];
 
   return (
@@ -67,7 +71,7 @@ const Navigation = () => {
                 >
                   <item.icon size={16} />
                   <span>{item.label}</span>
-                  {item.path === '/dashboard' && (
+                  {(item.path === '/dashboard' || item.path === '/arena') && (
                     <Badge variant="secondary" className="text-xs">New</Badge>
                   )}
                 </Link>
@@ -135,7 +139,7 @@ const Navigation = () => {
                 >
                   <item.icon size={18} />
                   <span>{item.label}</span>
-                  {item.path === '/dashboard' && (
+                  {(item.path === '/dashboard' || item.path === '/arena') && (
                     <Badge variant="secondary" className="text-xs ml-auto">New</Badge>
                   )}
                 </Link>
