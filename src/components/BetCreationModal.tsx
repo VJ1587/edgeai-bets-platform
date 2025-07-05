@@ -120,6 +120,14 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
     }
   };
 
+  // Map betType to ShareModal expected types
+  const getShareBetType = (): 'duel' | 'syndicate' | 'gaming' | 'bookie_line' => {
+    if (isTraditional) return 'bookie_line';
+    if (betType === '1v1') return 'duel';
+    if (betType === 'syndicate') return 'syndicate';
+    return 'gaming';
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -379,7 +387,7 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
         open={showShareModal}
         onClose={() => setShowShareModal(false)}
         betId={createdBetId}
-        betType={betType === '1v1' ? 'duel' : betType === 'syndicate' ? 'syndicate' : 'traditional'}
+        betType={getShareBetType()}
         amount={betAmount * multiplier}
         title={game ? `${game.away_team} @ ${game.home_team}` : description}
       />
