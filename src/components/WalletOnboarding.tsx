@@ -9,6 +9,7 @@ import { Wallet, CreditCard, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const WalletOnboarding: React.FC = () => {
   const { user } = useAuth();
@@ -17,14 +18,16 @@ export const WalletOnboarding: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const [localError, setLocalError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Auto-refresh wallet data every 10 seconds
+  // Auto-refresh wallet data every 15 seconds (reduced from 10)
   useEffect(() => {
+    if (!user || loading || refreshing) return;
+
     const interval = setInterval(() => {
-      if (user && !loading && !refreshing) {
-        refetch();
-      }
-    }, 10000);
+      console.log('⏰ Auto-refresh wallet data');
+      refetch();
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [user, loading, refetch, refreshing]);
@@ -66,13 +69,22 @@ export const WalletOnboarding: React.FC = () => {
     }
   };
 
+  const formatCurrency = (amount: number | null | undefined) => {
+    return (amount || 0).toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  };
+
   if (loading) {
     return (
       <Card>
-        <CardContent className="p-6">
+        <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
           <div className="flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="ml-2 text-sm text-muted-foreground">Loading wallet...</span>
+            <span className={`ml-2 text-muted-foreground ${isMobile ? 'text-sm' : ''}`}>
+              Loading wallet...
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -82,10 +94,10 @@ export const WalletOnboarding: React.FC = () => {
   if (error) {
     return (
       <Card>
-        <CardContent className="p-6">
+        <CardContent className={`${isMobile ? 'p-4' : 'p-6'}`}>
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className={isMobile ? 'text-sm' : ''}>
               Error loading wallet: {error}
               <Button onClick={handleRefresh} variant="outline" size="sm" className="ml-2">
                 Retry
@@ -100,16 +112,16 @@ export const WalletOnboarding: React.FC = () => {
   if (!wallet) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Wallet className="h-5 w-5" />
+        <CardHeader className={`${isMobile ? 'p-4 pb-2' : ''}`}>
+          <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-lg' : ''}`}>
+            <Wallet className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
             Wallet Not Found
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className={`${isMobile ? 'p-4 pt-2' : ''}`}>
           <Alert className="mb-4">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
+            <AlertDescription className={isMobile ? 'text-sm' : ''}>
               Your wallet should exist with $500,000 balance. There might be a data sync issue.
             </AlertDescription>
           </Alert>
@@ -125,10 +137,10 @@ export const WalletOnboarding: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+      <CardHeader className={`${isMobile ? 'p-4 pb-2' : ''}`}>
+        <CardTitle className={`flex items-center justify-between ${isMobile ? 'text-lg' : ''}`}>
           <div className="flex items-center gap-2">
-            <Wallet className="h-5 w-5" />
+            <Wallet className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
             Wallet Management
           </div>
           <Button
@@ -141,25 +153,27 @@ export const WalletOnboarding: React.FC = () => {
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <CardContent className={`space-y-4 ${isMobile ? 'p-4 pt-2' : ''}`}>
+        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
           <div className="bg-green-50 p-3 rounded-lg">
-            <p className="text-sm text-green-600">Available Balance</p>
-            <p className="text-2xl font-bold text-green-700">
-              ${wallet.balance?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+            <p className={`text-green-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>Available Balance</p>
+            <p className={`font-bold text-green-700 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+              ${formatCurrency(wallet.balance)}
             </p>
           </div>
           <div className="bg-orange-50 p-3 rounded-lg">
-            <p className="text-sm text-orange-600">In Escrow</p>
-            <p className="text-2xl font-bold text-orange-700">
-              ${wallet.escrow_held?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+            <p className={`text-orange-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>In Escrow</p>
+            <p className={`font-bold text-orange-700 ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+              ${formatCurrency(wallet.escrow_held)}
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="fund-amount">Add Funds (Demo)</Label>
-          <div className="flex gap-2">
+          <Label htmlFor="fund-amount" className={isMobile ? 'text-sm' : ''}>
+            Add Funds (Demo)
+          </Label>
+          <div className={`flex gap-2 ${isMobile ? 'flex-col' : ''}`}>
             <Input
               id="fund-amount"
               type="number"
@@ -168,10 +182,12 @@ export const WalletOnboarding: React.FC = () => {
               onChange={(e) => setFundAmount(e.target.value)}
               min="1"
               max="10000"
+              className={isMobile ? 'text-sm' : ''}
             />
             <Button 
               onClick={handleFundWallet}
               disabled={processing || !fundAmount}
+              className={isMobile ? 'w-full' : ''}
             >
               <CreditCard className="h-4 w-4 mr-2" />
               {processing ? 'Adding...' : 'Add'}
@@ -182,19 +198,19 @@ export const WalletOnboarding: React.FC = () => {
         {localError && (
           <Alert>
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{localError}</AlertDescription>
+            <AlertDescription className={isMobile ? 'text-sm' : ''}>{localError}</AlertDescription>
           </Alert>
         )}
 
-        <div className="text-xs text-muted-foreground">
-          <p>Daily Limit: ${wallet.daily_limit?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</p>
-          <p>Weekly Limit: ${wallet.weekly_limit?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</p>
+        <div className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground space-y-1`}>
+          <p>Daily Limit: ${formatCurrency(wallet.daily_limit)}</p>
+          <p>Weekly Limit: ${formatCurrency(wallet.weekly_limit)}</p>
         </div>
 
-        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-          <p className="text-xs text-blue-600">
+        <div className={`mt-4 p-3 bg-blue-50 rounded-lg ${isMobile ? 'text-center' : ''}`}>
+          <p className={`text-blue-600 ${isMobile ? 'text-xs' : 'text-xs'}`}>
             💰 Your wallet has been updated with $500,000 balance and $500,000 escrow. 
-            Click refresh if you don't see the latest amounts.
+            {isMobile ? 'Tap refresh if needed.' : 'Click refresh if you don\'t see the latest amounts.'}
           </p>
         </div>
       </CardContent>

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Database } from '@/integrations/supabase/types';
@@ -11,27 +11,29 @@ export const useWallet = () => {
   const [wallet, setWallet] = useState<UserWallet | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
-  useEffect(() => {
+  const fetchWallet = useCallback(async (forceRefresh = false) => {
     if (!user) {
       setWallet(null);
       setLoading(false);
       return;
     }
 
-    fetchWallet();
-  }, [user]);
-
-  const fetchWallet = async () => {
-    if (!user) return;
+    // Prevent excessive API calls - only fetch if more than 5 seconds have passed
+    const now = Date.now();
+    if (!forceRefresh && (now - lastFetchTime) < 5000) {
+      console.log('⏭️ Skipping wallet fetch - too recent');
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
+      setLastFetchTime(now);
       
-      console.log('Fetching wallet for user:', user.id);
+      console.log('🔄 Fetching wallet for user:', user.id);
       
-      // Use select with order by to get the most recent wallet record
       const { data, error } = await supabase
         .from('user_wallets')
         .select('*')
@@ -40,25 +42,35 @@ export const useWallet = () => {
         .limit(1);
 
       if (error) {
-        console.error('Supabase error fetching wallet:', error);
+        console.error('❌ Supabase error fetching wallet:', error);
         throw error;
       }
 
       if (data && data.length > 0) {
-        console.log('Wallet data found:', data[0]);
+        console.log('✅ Wallet data found:', data[0]);
         setWallet(data[0]);
       } else {
-        console.log('No wallet found for user');
+        console.log('❌ No wallet found for user');
         setWallet(null);
       }
     } catch (err) {
-      console.error('Error in fetchWallet:', err);
+      console.error('❌ Error in fetchWallet:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch wallet');
       setWallet(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, lastFetchTime]);
+
+  useEffect(() => {
+    if (!user) {
+      setWallet(null);
+      setLoading(false);
+      return;
+    }
+
+    fetchWallet(true); // Force initial fetch
+  }, [user, fetchWallet]);
 
   const updateBalance = async (newBalance: number) => {
     if (!user || !wallet) return;
@@ -78,11 +90,13 @@ export const useWallet = () => {
     }
   };
 
+  const refetch = useCallback(() => fetchWallet(true), [fetchWallet]);
+
   return {
     wallet,
     loading,
     error,
-    refetch: fetchWallet,
+    refetch,
     updateBalance
   };
 };
