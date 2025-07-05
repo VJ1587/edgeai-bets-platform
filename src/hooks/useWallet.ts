@@ -31,23 +31,24 @@ export const useWallet = () => {
       
       console.log('Fetching wallet for user:', user.id);
       
+      // Use select with order by to get the most recent wallet record
       const { data, error } = await supabase
         .from('user_wallets')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       if (error) {
         console.error('Supabase error fetching wallet:', error);
         throw error;
       }
 
-      if (data) {
-        console.log('Wallet data found:', data);
-        setWallet(data);
+      if (data && data.length > 0) {
+        console.log('Wallet data found:', data[0]);
+        setWallet(data[0]);
       } else {
-        console.log('No wallet found, wallet should exist with updated balances');
-        // Don't create a new wallet here, just set to null so component shows the issue
+        console.log('No wallet found for user');
         setWallet(null);
       }
     } catch (err) {
