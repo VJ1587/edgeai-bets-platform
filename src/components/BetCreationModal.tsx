@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Plus, AlertCircle, Calculator, DollarSign, Share } from 'lucide-react';
+import { Plus, AlertCircle, Calculator, DollarSign, Share, Crown, Users, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet } from '@/hooks/useWallet';
 import { useBetPlacement } from '@/hooks/useBetPlacement';
@@ -18,16 +19,23 @@ interface BetCreationModalProps {
   game?: OddsData;
   market?: string;
   outcome?: any;
+  isTraditional?: boolean;
 }
 
-export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market, outcome }) => {
+export const BetCreationModal: React.FC<BetCreationModalProps> = ({ 
+  game, 
+  market, 
+  outcome, 
+  isTraditional = false 
+}) => {
   const { user } = useAuth();
   const { wallet } = useWallet();
   const { placeBet, loading } = useBetPlacement();
   const [open, setOpen] = useState(false);
-  const [betType, setBetType] = useState<'1v1' | 'syndicate'>('1v1');
+  const [betType, setBetType] = useState<'1v1' | 'syndicate' | 'traditional'>('traditional');
+  const [tierLevel, setTierLevel] = useState<'contender' | 'challenger' | 'elite' | 'kingmaker'>('contender');
   const [amount, setAmount] = useState('');
-  const [vigPercent, setVigPercent] = useState('10');
+  const [vigPercent, setVigPercent] = useState(outcome?.vig || '10');
   const [expiryHours, setExpiryHours] = useState('24');
   const [description, setDescription] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
@@ -39,10 +47,38 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
   const escrowFee = betAmount > 5000 ? betAmount * 0.01 : 0; // 1% for bets > $5000
   const totalCost = betAmount + platformFee + escrowFee;
 
+  // Calculate potential payout for traditional bets
+  const calculatePayout = (amount: number, odds: number) => {
+    if (odds > 0) {
+      return amount + (amount * (odds / 100));
+    } else {
+      return amount + (amount * (100 / Math.abs(odds)));
+    }
+  };
+
+  const potentialPayout = outcome?.price ? calculatePayout(betAmount, outcome.price) : 0;
+
+  const tierMultipliers = {
+    contender: 1,
+    challenger: 1.5,
+    elite: 2,
+    kingmaker: 5
+  };
+
+  const maxBetByTier = {
+    contender: 500,
+    challenger: 2500,
+    elite: 10000,
+    kingmaker: 100000
+  };
+
+  const adjustedMaxBet = maxBetByTier[tierLevel];
+  const multiplier = tierMultipliers[tierLevel];
+
   const handleCreateBet = async () => {
     if (!user || !wallet) return;
     
-    if (betAmount <= 0) {
+    if (betAmount <= 0 || betAmount > adjustedMaxBet) {
       return;
     }
 
@@ -50,18 +86,29 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
       return;
     }
 
-    const selection = outcome ? `${outcome.name} ${outcome.price}` : description;
-    const odds = outcome?.price?.toString() || '100';
+    let selection = '';
+    let odds = '100';
+    
+    if (isTraditional && outcome) {
+      selection = `${outcome.name} ${outcome.price > 0 ? '+' : ''}${outcome.price}`;
+      if (outcome.point) {
+        selection += ` (${outcome.point > 0 ? '+' : ''}${outcome.point})`;
+      }
+      odds = outcome.price.toString();
+    } else {
+      selection = outcome ? `${outcome.name} ${outcome.price}` : description;
+      odds = outcome?.price?.toString() || '100';
+    }
 
     const result = await placeBet({
       gameId: game?.id || 'custom',
-      betType: market || 'straight',
+      betType: isTraditional ? `${market}_${tierLevel}` : (market || 'straight'),
       selection,
-      amount: betAmount,
+      amount: betAmount * multiplier, // Apply tier multiplier
       odds,
-      vigPercent: vig,
+      vigPercent: parseFloat(vigPercent),
       expiryHours: parseInt(expiryHours),
-      description
+      description: isTraditional ? `${game?.away_team} @ ${game?.home_team} - ${market}` : description
     });
 
     if (result) {
@@ -77,14 +124,25 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Bet
+          <Button size="sm" variant={isTraditional ? "default" : "outline"}>
+            {isTraditional ? (
+              <>
+                <DollarSign className="h-4 w-4 mr-2" />
+                Bet
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Bet
+              </>
+            )}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New Bet</DialogTitle>
+            <DialogTitle>
+              {isTraditional ? 'Place Traditional Bet' : 'Create New Bet'}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -92,28 +150,78 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
               <div className="p-3 bg-muted rounded-lg">
                 <p className="font-medium">{game.away_team} @ {game.home_team}</p>
                 {outcome && (
-                  <Badge variant="outline" className="mt-1">
-                    {outcome.name}: {outcome.price > 0 ? '+' : ''}{outcome.price}
-                  </Badge>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Badge variant="outline">
+                      {outcome.name}: {outcome.price > 0 ? '+' : ''}{outcome.price}
+                      {outcome.point && ` (${outcome.point > 0 ? '+' : ''}${outcome.point})`}
+                    </Badge>
+                    {isTraditional && (
+                      <Badge variant="secondary">
+                        Vig: {outcome.vig}%
+                      </Badge>
+                    )}
+                  </div>
                 )}
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant={betType === '1v1' ? 'default' : 'outline'}
-                onClick={() => setBetType('1v1')}
-                size="sm"
-              >
-                1v1 Challenge
-              </Button>
-              <Button
-                variant={betType === 'syndicate' ? 'default' : 'outline'}
-                onClick={() => setBetType('syndicate')}
-                size="sm"
-              >
-                Syndicate Pool
-              </Button>
+            {/* Bet Type Selection */}
+            {!isTraditional && (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant={betType === '1v1' ? 'default' : 'outline'}
+                  onClick={() => setBetType('1v1')}
+                  size="sm"
+                >
+                  1v1 Challenge
+                </Button>
+                <Button
+                  variant={betType === 'syndicate' ? 'default' : 'outline'}
+                  onClick={() => setBetType('syndicate')}
+                  size="sm"
+                >
+                  Syndicate Pool
+                </Button>
+              </div>
+            )}
+
+            {/* Tier Selection */}
+            <div>
+              <Label htmlFor="tier">Betting Tier</Label>
+              <Select value={tierLevel} onValueChange={(value: any) => setTierLevel(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="contender">
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4" />
+                      <span>Contender (Max: ${maxBetByTier.contender})</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="challenger">
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span>Challenger (Max: ${maxBetByTier.challenger.toLocaleString()})</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="elite">
+                    <div className="flex items-center gap-2">
+                      <Share className="h-4 w-4" />
+                      <span>Elite (Max: ${maxBetByTier.elite.toLocaleString()})</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="kingmaker">
+                    <div className="flex items-center gap-2">
+                      <Crown className="h-4 w-4" />
+                      <span>KingMaker (Max: ${maxBetByTier.kingmaker.toLocaleString()})</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Multiplier: {multiplier}x | Max Bet: ${adjustedMaxBet.toLocaleString()}
+              </p>
             </div>
 
             <div>
@@ -125,41 +233,49 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 min="1"
-                max="50000"
+                max={adjustedMaxBet}
               />
+              {betAmount > adjustedMaxBet && (
+                <p className="text-xs text-red-500 mt-1">
+                  Exceeds {tierLevel} tier limit of ${adjustedMaxBet.toLocaleString()}
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="vig">Vig %</Label>
-                <Input
-                  id="vig"
-                  type="number"
-                  value={vigPercent}
-                  onChange={(e) => setVigPercent(e.target.value)}
-                  min="0"
-                  max="50"
-                  step="0.5"
-                />
+            {!isTraditional && (
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="vig">Vig %</Label>
+                  <Input
+                    id="vig"
+                    type="number"
+                    value={vigPercent}
+                    onChange={(e) => setVigPercent(e.target.value)}
+                    min="0"
+                    max="50"
+                    step="0.5"
+                    disabled={isTraditional}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="expiry">Expires (hours)</Label>
+                  <Select value={expiryHours} onValueChange={setExpiryHours}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 hour</SelectItem>
+                      <SelectItem value="6">6 hours</SelectItem>
+                      <SelectItem value="24">24 hours</SelectItem>
+                      <SelectItem value="72">3 days</SelectItem>
+                      <SelectItem value="168">1 week</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div>
-                <Label htmlFor="expiry">Expires (hours)</Label>
-                <Select value={expiryHours} onValueChange={setExpiryHours}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 hour</SelectItem>
-                    <SelectItem value="6">6 hours</SelectItem>
-                    <SelectItem value="24">24 hours</SelectItem>
-                    <SelectItem value="72">3 days</SelectItem>
-                    <SelectItem value="168">1 week</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            )}
 
-            {!game && (
+            {!game && !isTraditional && (
               <div>
                 <Label htmlFor="description">Bet Description</Label>
                 <Textarea
@@ -176,13 +292,25 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
               <div className="p-3 bg-blue-50 rounded-lg space-y-2">
                 <div className="flex items-center gap-2">
                   <Calculator className="h-4 w-4" />
-                  <span className="font-medium">Cost Breakdown</span>
+                  <span className="font-medium">
+                    {isTraditional ? 'Payout Calculation' : 'Cost Breakdown'}
+                  </span>
                 </div>
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span>Bet Amount:</span>
                     <span>${betAmount.toFixed(2)}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span>Tier Multiplier ({multiplier}x):</span>
+                    <span>${(betAmount * multiplier).toFixed(2)}</span>
+                  </div>
+                  {isTraditional && potentialPayout > 0 && (
+                    <div className="flex justify-between font-medium text-green-600">
+                      <span>Potential Payout:</span>
+                      <span>${potentialPayout.toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span>Platform Fee (2.5%):</span>
                     <span>${platformFee.toFixed(2)}</span>
@@ -205,11 +333,11 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
               </div>
             )}
 
-            {betAmount > 5000 && (
-              <Alert>
+            {betAmount > adjustedMaxBet && (
+              <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Large wagers are subject to validation delays for security.
+                  Bet amount exceeds {tierLevel} tier limit of ${adjustedMaxBet.toLocaleString()}.
                 </AlertDescription>
               </Alert>
             )}
@@ -226,11 +354,17 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
             <div className="flex gap-2">
               <Button
                 onClick={handleCreateBet}
-                disabled={loading || !amount || (!game && !description) || totalCost > (wallet?.balance || 0)}
+                disabled={
+                  loading || 
+                  !amount || 
+                  betAmount > adjustedMaxBet ||
+                  (!game && !description && !isTraditional) || 
+                  totalCost > (wallet?.balance || 0)
+                }
                 className="flex-1"
               >
                 <DollarSign className="h-4 w-4 mr-2" />
-                {loading ? 'Creating...' : `Place $${betAmount.toFixed(2)} Bet`}
+                {loading ? 'Placing...' : `Place $${(betAmount * multiplier).toFixed(2)} Bet`}
               </Button>
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
@@ -245,8 +379,8 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({ game, market
         open={showShareModal}
         onClose={() => setShowShareModal(false)}
         betId={createdBetId}
-        betType={betType === '1v1' ? 'duel' : 'syndicate'}
-        amount={betAmount}
+        betType={betType === '1v1' ? 'duel' : betType === 'syndicate' ? 'syndicate' : 'traditional'}
+        amount={betAmount * multiplier}
         title={game ? `${game.away_team} @ ${game.home_team}` : description}
       />
     </>
