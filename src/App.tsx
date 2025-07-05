@@ -22,6 +22,7 @@ import BookieDashboard from '@/pages/BookieDashboard';
 import BookieLicensing from '@/pages/BookieLicensing';
 import BookieHub from '@/pages/BookieHub';
 import BetSimulation from '@/pages/BetSimulation';
+import Index from '@/pages/Index';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 
@@ -35,6 +36,7 @@ function App() {
           <Router>
             <div className="App">
               <Routes>
+                <Route path="/" element={<Index />} />
                 <Route path="/landing" element={<Landing />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/success" element={<Success />} />
@@ -49,7 +51,6 @@ function App() {
                     </ProtectedRoute>
                   }
                 >
-                  <Route index element={<Home />} />
                   <Route path="home" element={<Home />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="arena" element={<EnhancedDashboard />} />
