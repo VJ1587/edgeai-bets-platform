@@ -28,7 +28,7 @@ export class NavigationService {
     this.navigate?.('/profile');
   }
 
-  // Bet Flow Commands
+  // Enhanced Bet Flow Commands
   static startBet(type: '1v1' | 'syndicate' | 'kingmaker' | 'game') {
     switch (type) {
       case '1v1':
@@ -38,29 +38,57 @@ export class NavigationService {
         this.navigate?.('/challenges?type=arena');
         break;
       case 'kingmaker':
-        this.navigate?.('/challenges?type=kingmaker');
+        this.navigate?.('/arena?mode=kingmaker');
         break;
       case 'game':
-        this.navigate?.('/challenges?type=game');
+        this.navigate?.('/bet-simulation');
         break;
     }
   }
 
   static joinSyndicate(syndicateId?: string) {
-    const params = syndicateId ? `?join=${syndicateId}` : '';
-    this.navigate?.(`/challenges${params}`);
+    const path = syndicateId 
+      ? `/challenges?join=${syndicateId}` 
+      : '/challenges?tab=groups';
+    this.navigate?.(path);
   }
 
   static openEliteMatch() {
-    this.navigate?.('/challenges?type=kingmaker&elite=true');
+    this.navigate?.('/arena?tier=elite');
   }
 
   static launchBookieConsole() {
-    this.navigate?.('/bookie-dashboard');
+    this.navigate?.('/bookie-hub');
   }
 
-  static launchGameBet() {
-    this.navigate?.('/challenges?type=game');
+  static launchGameBet(gameType?: string) {
+    const path = gameType 
+      ? `/bet-simulation?type=${gameType}` 
+      : '/bet-simulation';
+    this.navigate?.(path);
+  }
+
+  static enterThePit() {
+    this.navigate?.('/lines?market=open');
+  }
+
+  static openKingmakerChallenge() {
+    this.navigate?.('/arena?challenge=kingmaker');
+  }
+
+  // Quick Action Commands
+  static quickDuel(amount?: number) {
+    const path = amount 
+      ? `/challenges?quick=duel&amount=${amount}` 
+      : '/challenges?quick=duel';
+    this.navigate?.(path);
+  }
+
+  static quickSyndicate(sport?: string) {
+    const path = sport 
+      ? `/challenges?tab=groups&sport=${sport}` 
+      : '/challenges?tab=groups';
+    this.navigate?.(path);
   }
 
   // Return navigation

@@ -1,135 +1,201 @@
-
-import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Home, Users, Target, TrendingUp, Building, Gamepad2, Crown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { WalletOnboarding } from '@/components/WalletOnboarding';
-import { SmartBetInterface } from '@/components/SmartBetInterface';
-import { AdminDashboard } from '@/components/AdminDashboard';
-import { useWallet } from '@/hooks/useWallet';
-import { fetchLiveOdds, OddsData } from '@/services/oddsService';
-import { Shield, TrendingUp, Users, Wallet } from 'lucide-react';
-import Navigation from './Navigation';
 
 const Layout = () => {
-  const { user } = useAuth();
-  const { wallet, loading: walletLoading } = useWallet();
-  const [games, setGames] = useState<OddsData[]>([]);
-  const [gamesLoading, setGamesLoading] = useState(true);
   const location = useLocation();
+  const { userProfile } = useAuth();
 
-  // Check if user is admin
-  const isAdmin = user?.email === 'vimj1915@gmail.com' || user?.email?.includes('@edgestake.ai');
-
-  // Don't show dashboard sections on landing page or auth pages
-  const showDashboardSections = user && !location.pathname.includes('/landing') && !location.pathname.includes('/auth');
-
-  useEffect(() => {
-    if (showDashboardSections) {
-      const loadGames = async () => {
-        try {
-          setGamesLoading(true);
-          const oddsData = await fetchLiveOdds();
-          setGames(oddsData);
-        } catch (error) {
-          console.error('Error loading games:', error);
-        } finally {
-          setGamesLoading(false);
-        }
-      };
-
-      loadGames();
+  // Enhanced navigation items with new features
+  const navItems = [
+    { 
+      name: 'Home', 
+      path: '/', 
+      icon: Home, 
+      description: 'AI Picks & Dashboard'
+    },
+    { 
+      name: 'My Arena', 
+      path: '/arena', 
+      icon: Crown, 
+      description: 'Elite Battle Arena'
+    },
+    { 
+      name: 'Live Lines', 
+      path: '/lines', 
+      icon: TrendingUp, 
+      description: 'Real-time Odds'
+    },
+    { 
+      name: 'Challenges', 
+      path: '/challenges', 
+      icon: Users, 
+      description: 'Social Betting'
+    },
+    { 
+      name: 'AI Picks', 
+      path: '/picks', 
+      icon: Target, 
+      description: 'Expert Predictions'
     }
-  }, [showDashboardSections]);
+  ];
+
+  // Enhanced navigation for premium users
+  const premiumNavItems = [
+    { 
+      name: 'Bookie Hub', 
+      path: '/bookie-hub', 
+      icon: Building, 
+      description: 'Host & Manage Bets',
+      premium: true
+    },
+    { 
+      name: 'Simulations', 
+      path: '/bet-simulation', 
+      icon: Gamepad2, 
+      description: 'Bet Flow Demos',
+      premium: true
+    }
+  ];
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  const isPremiumUser = userProfile?.plan_type !== 'free';
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      {showDashboardSections ? (
-        <div className="min-h-screen gradient-bg">
-          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-            <div className="mb-4 sm:mb-8">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">EdgeStake Dashboard</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Welcome back, {user.email}
+      {/* Enhanced Mobile Navigation */}
+      <div className="lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border">
+          <nav className="flex justify-around py-2">
+            {navItems.slice(0, 5).map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={`flex flex-col items-center py-2 px-3 rounded-lg transition-all ${
+                    active
+                      ? 'text-primary bg-primary/10'
+                      : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+                  }`}
+                >
+                  <Icon className="h-5 w-5 mb-1" />
+                  <span className="text-xs font-medium">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+        <div className="pb-20">
+          <Outlet />
+        </div>
+      </div>
+
+      {/* Enhanced Desktop Layout */}
+      <div className="hidden lg:flex">
+        <aside className="w-72 border-r border-border bg-card/30 backdrop-blur-sm">
+          <div className="p-6">
+            {/* Enhanced Brand Header */}
+            <div className="text-center mb-8">
+              <div className="flex justify-center items-center gap-2 mb-2">
+                <Crown className="h-6 w-6 text-yellow-500" />
+                <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                  EdgeStake
+                </h1>
+                <Crown className="h-6 w-6 text-yellow-500" />
+              </div>
+              <p className="text-xs text-muted-foreground italic">
+                "Bet like a king. Win like a legend."
               </p>
             </div>
 
-            <Tabs defaultValue="betting" className="space-y-4 sm:space-y-6">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto p-1">
-                <TabsTrigger value="betting" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Betting</span>
-                </TabsTrigger>
-                <TabsTrigger value="wallet" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                  <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Wallet</span>
-                </TabsTrigger>
-                <TabsTrigger value="syndicates" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Syndicates</span>
-                </TabsTrigger>
-                {isAdmin && (
-                  <TabsTrigger value="admin" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2 sm:p-3">
-                    <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Admin</span>
-                  </TabsTrigger>
-                )}
-              </TabsList>
+            {/* Enhanced Navigation */}
+            <nav className="space-y-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.path);
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${
+                      active
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <div className="flex-1">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-xs opacity-70">{item.description}</div>
+                    </div>
+                  </Link>
+                );
+              })}
 
-              <TabsContent value="betting" className="mt-4 sm:mt-6">
-                {gamesLoading ? (
-                  <div className="flex items-center justify-center p-6 sm:p-8">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              {/* Premium Features */}
+              {isPremiumUser && (
+                <>
+                  <div className="pt-4 pb-2">
+                    <div className="flex items-center gap-2 px-4">
+                      <Crown className="h-4 w-4 text-yellow-500" />
+                      <span className="text-sm font-medium text-yellow-600">Premium Features</span>
+                    </div>
                   </div>
-                ) : (
-                  <SmartBetInterface games={games} />
-                )}
-              </TabsContent>
-
-              <TabsContent value="wallet" className="mt-4 sm:mt-6">
-                <div className="max-w-full sm:max-w-2xl">
-                  <WalletOnboarding />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="syndicates" className="mt-4 sm:mt-6">
-                <Card>
-                  <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                      Syndicate Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0">
-                    <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                      Join syndicate challenges or create your own pooled betting opportunities.
-                    </p>
-                    <SmartBetInterface games={games} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {isAdmin && (
-                <TabsContent value="admin" className="mt-4 sm:mt-6">
-                  <AdminDashboard />
-                </TabsContent>
+                  {premiumNavItems.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.path);
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all group ${
+                          active
+                            ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-md'
+                            : 'text-muted-foreground hover:text-primary hover:bg-gradient-to-r hover:from-yellow-50 hover:to-orange-50'
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <div className="flex-1">
+                          <div className="font-medium">{item.name}</div>
+                          <div className="text-xs opacity-70">{item.description}</div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </>
               )}
-            </Tabs>
 
-            {/* Original page content */}
-            <div className="mt-6 sm:mt-8">
-              <Outlet />
-            </div>
+              {/* Tier Badge */}
+              <div className="pt-6">
+                <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {userProfile?.plan_type || 'free'} Plan
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {isPremiumUser ? 'Premium features unlocked' : 'Upgrade for more features'}
+                  </p>
+                </div>
+              </div>
+            </nav>
           </div>
-        </div>
-      ) : (
-        <main className="pb-16 sm:pb-20">
+        </aside>
+
+        <main className="flex-1">
           <Outlet />
         </main>
-      )}
+      </div>
     </div>
   );
 };

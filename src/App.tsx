@@ -58,6 +58,8 @@ function App() {
                   <Route path="profile" element={<Profile />} />
                   <Route path="bookie-dashboard" element={<BookieDashboard />} />
                   <Route path="bookie-licensing" element={<BookieLicensing />} />
+                  <Route path="bookie-hub" element={<BookieHub />} />
+                  <Route path="bet-simulation" element={<BetSimulation />} />
                 </Route>
               </Routes>
               <Toaster />
