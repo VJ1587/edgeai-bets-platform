@@ -127,7 +127,7 @@ export const BetSimulationFlow: React.FC<BetSimulationFlowProps> = ({
             {flow.fees.escrowFee && (
               <div className="flex justify-between">
                 <span>Escrow Fee:</span>
-                <span className="font-medium">{flow.fees.escrowFee}% (>$5K)</span>
+                <span className="font-medium">{flow.fees.escrowFee}% (above $5K)</span>
               </div>
             )}
             {flow.fees.syndicateFee && (
