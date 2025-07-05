@@ -42,21 +42,31 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
   const [createdBetId, setCreatedBetId] = useState<string>('');
 
   const betAmount = parseFloat(amount) || 0;
-  const vig = parseFloat(vigPercent) || 0;
+  
+  // For traditional bets, use the outcome's vig, otherwise allow custom vig
+  const currentVig = isTraditional ? (parseFloat(outcome?.vig) || 10) : parseFloat(vigPercent);
+  
   const platformFee = betAmount * 0.025; // 2.5%
   const escrowFee = betAmount > 5000 ? betAmount * 0.01 : 0; // 1% for bets > $5000
+  const vigFee = betAmount * (currentVig / 100); // Vig fee based on bet amount
   const totalCost = betAmount + platformFee + escrowFee;
 
-  // Calculate potential payout for traditional bets
+  // Calculate potential payout for traditional bets (winnings after all fees)
   const calculatePayout = (amount: number, odds: number) => {
+    let grossWinnings = 0;
     if (odds > 0) {
-      return amount + (amount * (odds / 100));
+      grossWinnings = amount * (odds / 100);
     } else {
-      return amount + (amount * (100 / Math.abs(odds)));
+      grossWinnings = amount * (100 / Math.abs(odds));
     }
+    
+    // Subtract vig and platform fees from winnings
+    const netWinnings = grossWinnings - vigFee - (grossWinnings * 0.025);
+    return amount + netWinnings; // Return total payout (original bet + net winnings)
   };
 
   const potentialPayout = outcome?.price ? calculatePayout(betAmount, outcome.price) : 0;
+  const netWinnings = potentialPayout - betAmount;
 
   const tierMultipliers = {
     contender: 1,
@@ -82,7 +92,7 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
       return;
     }
 
-    if (betAmount > (wallet.balance || 0)) {
+    if (totalCost > (wallet.balance || 0)) {
       return;
     }
 
@@ -104,9 +114,9 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
       gameId: game?.id || 'custom',
       betType: isTraditional ? `${market}_${tierLevel}` : (market || 'straight'),
       selection,
-      amount: betAmount * multiplier, // Apply tier multiplier
+      amount: betAmount * multiplier,
       odds,
-      vigPercent: parseFloat(vigPercent),
+      vigPercent: currentVig,
       expiryHours: parseInt(expiryHours),
       description: isTraditional ? `${game?.away_team} @ ${game?.home_team} - ${market}` : description
     });
@@ -163,17 +173,15 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
                       {outcome.name}: {outcome.price > 0 ? '+' : ''}{outcome.price}
                       {outcome.point && ` (${outcome.point > 0 ? '+' : ''}${outcome.point})`}
                     </Badge>
-                    {isTraditional && (
-                      <Badge variant="secondary">
-                        Vig: {outcome.vig}%
-                      </Badge>
-                    )}
+                    <Badge variant="secondary">
+                      Vig: {currentVig.toFixed(1)}%
+                    </Badge>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Bet Type Selection */}
+            {/* Bet Type Selection - Only for non-traditional bets */}
             {!isTraditional && (
               <div className="grid grid-cols-2 gap-2">
                 <Button
@@ -250,38 +258,43 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
               )}
             </div>
 
-            {!isTraditional && (
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="vig">Vig %</Label>
-                  <Input
-                    id="vig"
-                    type="number"
-                    value={vigPercent}
-                    onChange={(e) => setVigPercent(e.target.value)}
-                    min="0"
-                    max="50"
-                    step="0.5"
-                    disabled={isTraditional}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="expiry">Expires (hours)</Label>
-                  <Select value={expiryHours} onValueChange={setExpiryHours}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 hour</SelectItem>
-                      <SelectItem value="6">6 hours</SelectItem>
-                      <SelectItem value="24">24 hours</SelectItem>
-                      <SelectItem value="72">3 days</SelectItem>
-                      <SelectItem value="168">1 week</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Vig and Expiry - Only show vig input for non-traditional bets */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="vig">Vig %</Label>
+                <Input
+                  id="vig"
+                  type="number"
+                  value={isTraditional ? currentVig.toFixed(1) : vigPercent}
+                  onChange={(e) => setVigPercent(e.target.value)}
+                  min="0"
+                  max="50"
+                  step="0.5"
+                  disabled={isTraditional}
+                  className={isTraditional ? 'bg-muted' : ''}
+                />
+                {isTraditional && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Set by house
+                  </p>
+                )}
               </div>
-            )}
+              <div>
+                <Label htmlFor="expiry">Expires (hours)</Label>
+                <Select value={expiryHours} onValueChange={setExpiryHours}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 hour</SelectItem>
+                    <SelectItem value="6">6 hours</SelectItem>
+                    <SelectItem value="24">24 hours</SelectItem>
+                    <SelectItem value="72">3 days</SelectItem>
+                    <SelectItem value="168">1 week</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
             {!game && !isTraditional && (
               <div>
@@ -301,7 +314,7 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
                 <div className="flex items-center gap-2">
                   <Calculator className="h-4 w-4" />
                   <span className="font-medium">
-                    {isTraditional ? 'Payout Calculation' : 'Cost Breakdown'}
+                    {isTraditional ? 'Bet Summary' : 'Cost Breakdown'}
                   </span>
                 </div>
                 <div className="text-sm space-y-1">
@@ -313,15 +326,13 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
                     <span>Tier Multiplier ({multiplier}x):</span>
                     <span>${(betAmount * multiplier).toFixed(2)}</span>
                   </div>
-                  {isTraditional && potentialPayout > 0 && (
-                    <div className="flex justify-between font-medium text-green-600">
-                      <span>Potential Payout:</span>
-                      <span>${potentialPayout.toFixed(2)}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
                     <span>Platform Fee (2.5%):</span>
                     <span>${platformFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Vig Fee ({currentVig.toFixed(1)}%):</span>
+                    <span>${vigFee.toFixed(2)}</span>
                   </div>
                   {escrowFee > 0 && (
                     <div className="flex justify-between">
@@ -333,6 +344,18 @@ export const BetCreationModal: React.FC<BetCreationModalProps> = ({
                     <span>Total Cost:</span>
                     <span>${totalCost.toFixed(2)}</span>
                   </div>
+                  {isTraditional && potentialPayout > 0 && (
+                    <>
+                      <div className="flex justify-between text-green-600">
+                        <span>Potential Payout:</span>
+                        <span>${potentialPayout.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-green-600 font-medium">
+                        <span>Net Winnings:</span>
+                        <span>${netWinnings.toFixed(2)}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex justify-between text-muted-foreground">
                     <span>Your Balance:</span>
                     <span>${(wallet?.balance || 0).toFixed(2)}</span>

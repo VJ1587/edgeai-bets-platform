@@ -32,10 +32,15 @@ export const useBetPlacement = () => {
       return null;
     }
 
-    if (params.amount > (wallet.balance || 0)) {
+    // Calculate all fees
+    const platformFee = params.amount * 0.025; // 2.5%
+    const escrowFee = params.amount > 5000 ? params.amount * 0.01 : 0; // 1% for large bets
+    const totalDeduction = params.amount + platformFee + escrowFee;
+
+    if (totalDeduction > (wallet.balance || 0)) {
       toast({
         title: "Insufficient Balance",
-        description: `You need $${params.amount.toFixed(2)} but only have $${(wallet.balance || 0).toFixed(2)}`,
+        description: `You need $${totalDeduction.toFixed(2)} but only have $${(wallet.balance || 0).toFixed(2)}`,
         variant: "destructive"
       });
       return null;
@@ -46,11 +51,6 @@ export const useBetPlacement = () => {
     try {
       const expiryTime = new Date();
       expiryTime.setHours(expiryTime.getHours() + (params.expiryHours || 24));
-
-      // Calculate fees
-      const platformFee = params.amount * 0.025; // 2.5%
-      const escrowFee = params.amount > 5000 ? params.amount * 0.01 : 0; // 1% for large bets
-      const totalDeduction = params.amount + platformFee + escrowFee;
 
       // Create the bet
       const { data: betData, error: betError } = await supabase
@@ -69,9 +69,12 @@ export const useBetPlacement = () => {
         .select()
         .single();
 
-      if (betError) throw betError;
+      if (betError) {
+        console.error('Bet creation error:', betError);
+        throw betError;
+      }
 
-      // Update wallet balance (deduct bet amount + fees)
+      // Update wallet balance (deduct total cost)
       const { error: walletError } = await supabase
         .from('user_wallets')
         .update({ 
@@ -80,7 +83,10 @@ export const useBetPlacement = () => {
         })
         .eq('user_id', user.id);
 
-      if (walletError) throw walletError;
+      if (walletError) {
+        console.error('Wallet update error:', walletError);
+        throw walletError;
+      }
 
       // Create escrow record
       const { error: escrowError } = await supabase
@@ -92,7 +98,10 @@ export const useBetPlacement = () => {
           status: 'held'
         });
 
-      if (escrowError) throw escrowError;
+      if (escrowError) {
+        console.error('Escrow creation error:', escrowError);
+        throw escrowError;
+      }
 
       await refetchWallet();
 
