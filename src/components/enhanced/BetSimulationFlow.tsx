@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,10 +12,10 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
-import type { BetSimulationFlow } from '@/types/edgestake';
+import type { BetSimulationFlow as BetFlowType } from '@/types/edgestake';
 
 interface BetSimulationFlowProps {
-  flow: BetSimulationFlow;
+  flow: BetFlowType;
   currentStep: number;
   onStepComplete: (stepId: string) => void;
 }

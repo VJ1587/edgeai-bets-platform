@@ -20,6 +20,8 @@ import Profile from '@/pages/Profile';
 import Success from '@/pages/Success';
 import BookieDashboard from '@/pages/BookieDashboard';
 import BookieLicensing from '@/pages/BookieLicensing';
+import BookieHub from '@/pages/BookieHub';
+import BetSimulation from '@/pages/BetSimulation';
 import NotFound from '@/pages/NotFound';
 import './App.css';
 

@@ -37,10 +37,18 @@ export const BookieHub: React.FC<BookieHubProps> = ({
     onTierSelect(tierId);
   };
 
-  // Mock data for demo
+  // Mock data for demo - get daily cap from bookieTiers based on operator tier
+  const getCurrentTierData = () => {
+    if (!operator) return { dailyCap: 25000 };
+    const tierData = bookieTiers.find(tier => tier.id === operator.tier);
+    return {
+      dailyCap: tierData?.dailyCap || 25000
+    };
+  };
+
   const dailyStats = {
     wagersToday: 12500,
-    dailyCap: operator?.dailyCap || 25000,
+    dailyCap: getCurrentTierData().dailyCap,
     activeLines: 23,
     totalUsers: 156
   };

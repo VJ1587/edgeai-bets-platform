@@ -1,3 +1,4 @@
+
 export interface BetTier {
   id: string;
   name: string;
@@ -83,14 +84,23 @@ export interface ShareableLink {
   };
 }
 
+// Updated BookieOperator to match database schema
 export interface BookieOperator {
   id: string;
-  userId: string;
-  tier: 'local' | 'regional' | 'elite' | 'institutional';
-  businessName: string;
-  monthlyFee: number;
-  dailyCap: number;
-  features: string[];
-  status: 'pending' | 'active' | 'suspended';
-  verificationLevel: 'basic' | 'kyc' | 'institutional';
+  user_id: string; // matches database column name
+  tier: 'starter' | 'pro' | 'elite';
+  business_name: string; // matches database column name
+  monthly_fee: number; // matches database column name
+  status: 'pending' | 'active' | 'suspended' | 'terminated';
+  kyc_verified: boolean;
+  kyc_verified_at: string | null;
+  liquidity_validated: boolean;
+  liquidity_validated_at: string | null;
+  bank_account_verified: boolean;
+  crypto_escrow_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  license_number: string | null;
 }
